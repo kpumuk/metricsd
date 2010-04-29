@@ -4,10 +4,10 @@ import (
     "container/vector"
     "exec"
     "fmt"
-    "log"
     "os"
     "sort"
     "strings"
+    "./config"
 )
 
 
@@ -15,13 +15,13 @@ type Writer interface {
     Rollup(time int64, key string, samples *vector.IntVector)
 }
 
-func getRrdFile(data string, t string, key string) string {
-    return fmt.Sprintf("%s/%s-%s.rrd", data, t, key)
+func getRrdFile(t string, key string) string {
+    return fmt.Sprintf("%s/%s-%s.rrd", config.GlobalConfig.DataDir, t, key)
 }
 
-func runRrd(data string, argv []string) {
-    log.Stdout(strings.Join(argv, " "))
-    p, error := exec.Run("/usr/bin/rrdtool", argv, nil, data, exec.PassThrough, exec.PassThrough, exec.PassThrough)
+func runRrd(argv []string) {
+    config.GlobalConfig.Logger.Debug(strings.Join(argv, " "))
+    p, error := exec.Run(config.GlobalConfig.RrdToolPath, argv, nil, config.GlobalConfig.DataDir, exec.PassThrough, exec.PassThrough, exec.PassThrough)
     if error != nil {
 
     } else {
@@ -34,10 +34,9 @@ func runRrd(data string, argv []string) {
 /******************************************************************************/
 
 type Quartiles struct {
-    Data string
 }
 
-type Quartile struct {
+type QuartilesItem struct {
     time int64
     lo, q1, q2, q3, hi, total int
 }
@@ -50,7 +49,7 @@ func (quartiles *Quartiles) Rollup(time int64, key string, samples *vector.IntVe
     number := samples.Len()
     lo_c := number / 2
     hi_c := number - lo_c
-    data := new(Quartile)
+    data := &QuartilesItem {}
     if lo_c > 0 && hi_c > 0 {
         lo_samples := samples.Slice(0, lo_c)
         hi_samples := samples.Slice(lo_c, hi_c)
@@ -73,12 +72,11 @@ func (quartiles *Quartiles) Rollup(time int64, key string, samples *vector.IntVe
     quartiles.save(time, key, data)
 }
 
-func (self *Quartiles) save(t int64, key string, data *Quartile) {
-    file := getRrdFile(self.Data, "quartiles", key)
-    log.Stdoutf("File: %s", file)
+func (self *Quartiles) save(t int64, key string, data *QuartilesItem) {
+    file := getRrdFile("quartiles", key)
     if _, err := os.Stat(file); err != nil {
         argv := []string{
-            "/usr/bin/rrdtool",
+            config.GlobalConfig.RrdToolPath,
             "create", file,
             "--step", "10",
             "--start", fmt.Sprintf("%d", data.time - 1),
@@ -98,41 +96,44 @@ func (self *Quartiles) save(t int64, key string, data *Quartile) {
             "RRA:MAX:0.5:60:4320",          // 1 month at 1 sample per 10 mins
             "RRA:MAX:0.5:2880:5475",        // 5 years at 1 sample per 8 hours
         }
-        runRrd(self.Data, argv)
+        runRrd(argv)
     }
     argv := []string{
-        "/usr/bin/rrdtool",
+        config.GlobalConfig.RrdToolPath,
         "update", file,
         fmt.Sprintf("%d:%d:%d:%d:%d:%d:%d", data.time, data.q1, data.q2, data.q3, data.lo, data.hi, data.total),
     }
-    runRrd(self.Data, argv)
+    runRrd(argv)
 }
 
 /******************************************************************************/
 
 type YesOrNo struct {
-    Data string
+}
+
+type YesOrNoItem struct {
+    ok   uint64
+    fail uint64
 }
 
 func (self *YesOrNo) Rollup(time int64, key string, samples *vector.IntVector) {
-	var ok, fail uint
+	data := &YesOrNoItem {}
 	samples.Do(func(elem interface{}) {
 	    value := elem.(int)
 	    if value > 0 {
-	        ok += 1
+	        data.ok++
         } else {
-            fail += 1
+            data.fail++
         }
 	})
-	self.save(time, key, ok, fail)
+	self.save(time, key, data)
 }
 
-func (self *YesOrNo) save(t int64, key string, ok uint, fail uint) {
-    file := getRrdFile(self.Data, "yesno", key)
-    log.Stdoutf("File: %s", file)
+func (self *YesOrNo) save(t int64, key string, data *YesOrNoItem) {
+    file := getRrdFile("yesno", key)
     if _, err := os.Stat(file); err != nil {
         argv := []string{
-            "/usr/bin/rrdtool",
+            config.GlobalConfig.RrdToolPath,
             "create", file,
             "--step", "10",
             "--start", fmt.Sprintf("%d", t - 1),
@@ -142,12 +143,12 @@ func (self *YesOrNo) save(t int64, key string, ok uint, fail uint) {
             "RRA:AVERAGE:0.5:60:4320",      // 1 month at 1 sample per 10 mins
             "RRA:AVERAGE:0.5:2880:5475",    // 5 years at 1 sample per 8 hours
         }
-        runRrd(self.Data, argv)
+        runRrd(argv)
     }
     argv := []string{
-        "/usr/bin/rrdtool",
+        config.GlobalConfig.RrdToolPath,
         "update", file,
-        fmt.Sprintf("%d:%d:%d", t, ok, fail),
+        fmt.Sprintf("%d:%d:%d", t, data.ok, data.fail),
     }
-    runRrd(self.Data, argv)
+    runRrd(argv)
 }

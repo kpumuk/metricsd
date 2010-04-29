@@ -4,7 +4,8 @@ TARG=gorrdpd
 GOFILES=\
 	server.go \
 
-server.$O: types.$O writers.$O config.$O
+server.$O: config.$O logger.$O types.$O writers.$O
+config.$O: logger.$O
 
 include $(GOROOT)/src/Make.pkg
 
@@ -17,4 +18,4 @@ gorrdpd: server.$O
 	${LD} -o $@ server.$O
 
 start: gorrdpd
-	./gorrdpd -debug=5 -slice=1 -write=5 -data ./data
+	./gorrdpd -debug=0 -slice=1 -write=5 -data ./data

@@ -74,7 +74,7 @@ func listen(msgchan chan<- *types.Message) {
             continue
         }
         buf := bytes.NewBuffer(message[0:n])
-        go process(addr, buf.String(), msgchan)
+        process(addr, buf.String(), msgchan)
     }
 }
 
@@ -89,14 +89,14 @@ func msgSlicer(msgchan <-chan *types.Message) {
 func initialize() {
     var slice, write int
     var listen, data string
-    flag.StringVar(&listen, "listen", ":6311", "Set the port (+optional address) to listen at")
-    flag.StringVar(&data,   "data",   "",      "Set the data directory")
-    flag.IntVar   (&debug,  "debug",  0,       "Set the debug level, the higher, the more verbose")
-    flag.IntVar   (&slice,  "slice",  10,      "Set the slice interval in seconds")
-    flag.IntVar   (&write,  "write",  60,      "Set the write interval in seconds")
+    flag.StringVar(&listen, "listen", "0.0.0.0:6311", "Set the port (+optional address) to listen at")
+    flag.StringVar(&data,   "data",   "", "Set the data directory")
+    flag.IntVar   (&debug,  "debug",  0,  "Set the debug level, the higher, the more verbose")
+    flag.IntVar   (&slice,  "slice",  10, "Set the slice interval in seconds")
+    flag.IntVar   (&write,  "write",  60, "Set the write interval in seconds")
     flag.Parse()
 
-    if data[0] != '/' {
+    if len(data) == 0 || data[0] != '/' {
         wd, _ := os.Getwd()
         data = path.Join(wd, data)
     }

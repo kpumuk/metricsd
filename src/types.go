@@ -30,9 +30,8 @@ type Slices struct {
     Slices map[int64] *Slice
 }
 
-func NewSlices(config *map[string] interface{}) *Slices {
-    interval := int64((*config)["slice"].(int))
-    return &Slices { Slices: make(map[int64] *Slice), Interval: interval }
+func NewSlices(sliceInterval int) *Slices {
+    return &Slices { Slices: make(map[int64] *Slice), Interval: int64(sliceInterval) }
 }
 
 func (slices *Slices) Add(message *Message) {

@@ -10,15 +10,12 @@ import (
     "strconv"
     "strings"
     "time"
+    "./config"
     "./types"
     "./writers"
 )
 
 var (
-    /**
-     * Configuration, indexed by keywords, for instance "debug" or "servername"
-     */
-    globalConfig map[string] interface{}
     /**
      * Not mandatory but it is simpler to use than
      * globalConfig["debug"], which has type interface{}
@@ -56,10 +53,10 @@ func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
 }
 
 func listen(msgchan chan<- *types.Message) {
-    if debug > 2 { log.Stdoutf("Starting listener on %s", globalConfig["address"]) }
+    if debug > 2 { log.Stdoutf("Starting listener on %s", config.GlobalConfig.UDPAddress) }
 
     // Listen for requests
-    listener, error := net.ListenUDP("udp", globalConfig["address"].(*net.UDPAddr))
+    listener, error := net.ListenUDP("udp", config.GlobalConfig.UDPAddress)
     if error != nil {
         log.Exitf("Cannot listen: %s", error)
     }
@@ -102,12 +99,11 @@ func initialize() {
     }
     if debug > 2 { log.Stdout("Initializing configuration") }
 
-    globalConfig = make(map[string] interface{})
-    globalConfig["listen"] = listen
-    globalConfig["data"]   = data
-    globalConfig["debug"]  = debug
-    globalConfig["slice"]  = slice
-    globalConfig["write"]  = write
+    config.GlobalConfig.Listen        = listen
+    config.GlobalConfig.Data          = data
+    config.GlobalConfig.LogLevel      = debug
+    config.GlobalConfig.SliceInterval = slice
+    config.GlobalConfig.WriteInterval = write
 
     if _, err := os.Stat(data); err != nil {
         os.MkdirAll(data, 0755)
@@ -120,9 +116,9 @@ func initialize() {
         log.Exitf("Cannot parse \"%s\": %s", listen, error)
     }
 
-    globalConfig["address"] = address
+    config.GlobalConfig.UDPAddress = address
 
-    slices = types.NewSlices(&globalConfig)
+    slices = types.NewSlices(config.GlobalConfig.SliceInterval)
 }
 
 func rollupSlices(active_writers []writers.Writer) {
@@ -147,10 +143,10 @@ func main() {
     go msgSlicer(msgchan)
 
     active_writers := make([]writers.Writer, 2)
-    active_writers[0] = &writers.Quartiles { Data: globalConfig["data"].(string) }
-    active_writers[1] = &writers.YesOrNo   { Data: globalConfig["data"].(string) }
+    active_writers[0] = &writers.Quartiles { Data: config.GlobalConfig.Data }
+    active_writers[1] = &writers.YesOrNo   { Data: config.GlobalConfig.Data }
 
-    ticker := time.NewTicker(int64(globalConfig["write"].(int)) * 1000000000) // 10^9
+    ticker := time.NewTicker(int64(config.GlobalConfig.WriteInterval) * 1000000000) // 10^9
     defer ticker.Stop()
     go func() {
         for {

@@ -4,7 +4,7 @@ TARG=gorrdpd
 GOFILES=\
 	server.go \
 
-server.$O: types.$O writers.$O
+server.$O: types.$O writers.$O config.$O
 
 include $(GOROOT)/src/Make.pkg
 

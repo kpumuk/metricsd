@@ -25,7 +25,7 @@ type Logger interface {
 
 type base struct {
     LogLevel Severity
-    add      func(severity Severity, format string, v ...interface{})
+    addFunc  func(severity Severity, format string, v ...interface{})
 }
 
 func (logger *base) Debug(format string, v ...interface{}) {
@@ -53,12 +53,12 @@ func (logger *base) Unknown(format string, v ...interface{}) {
 }
 
 func (logger *base) Add(severity Severity, format string, v ...interface{}) {
-    if logger.add == nil {
+    if logger.addFunc == nil {
         log.Crash("Tried to use base logger, which has no ability to output. Use descendants instead!")
     }
 
     if severity < logger.LogLevel { return }
-    logger.add(severity, format, v)
+    logger.addFunc(severity, format, v)
 }
 
 /******************************************************************************/
@@ -71,6 +71,6 @@ func NewConsoleLogger(logLevel Severity) *ConsoleLogger {
     logger := &ConsoleLogger { }
     logger.base = &base {}
     logger.base.LogLevel = logLevel
-    logger.base.add      = func(severity Severity, format string, v ...interface{}) { log.Stdoutf(format, v) }
+    logger.base.addFunc  = func(severity Severity, format string, v ...interface{}) { log.Stdoutf(format, v) }
     return logger
 }

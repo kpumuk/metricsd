@@ -75,7 +75,7 @@ func (quartiles *Quartiles) Rollup(time int64, key string, samples *vector.IntVe
 func (self *Quartiles) save(t int64, key string, data *QuartilesItem) {
     file := getRrdFile("quartiles", key)
     if _, err := os.Stat(file); err != nil {
-        argv := []string{
+        argv := []string {
             config.GlobalConfig.RrdToolPath,
             "create", file,
             "--step", "10",
@@ -98,7 +98,7 @@ func (self *Quartiles) save(t int64, key string, data *QuartilesItem) {
         }
         runRrd(argv)
     }
-    argv := []string{
+    argv := []string {
         config.GlobalConfig.RrdToolPath,
         "update", file,
         fmt.Sprintf("%d:%d:%d:%d:%d:%d:%d", data.time, data.q1, data.q2, data.q3, data.lo, data.hi, data.total),
@@ -132,7 +132,7 @@ func (self *YesOrNo) Rollup(time int64, key string, samples *vector.IntVector) {
 func (self *YesOrNo) save(t int64, key string, data *YesOrNoItem) {
     file := getRrdFile("yesno", key)
     if _, err := os.Stat(file); err != nil {
-        argv := []string{
+        argv := []string {
             config.GlobalConfig.RrdToolPath,
             "create", file,
             "--step", "10",
@@ -145,7 +145,7 @@ func (self *YesOrNo) save(t int64, key string, data *YesOrNoItem) {
         }
         runRrd(argv)
     }
-    argv := []string{
+    argv := []string {
         config.GlobalConfig.RrdToolPath,
         "update", file,
         fmt.Sprintf("%d:%d:%d", t, data.ok, data.fail),

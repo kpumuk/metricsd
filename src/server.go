@@ -80,8 +80,7 @@ func msgSlicer(msgchan <-chan *types.Message) {
 }
 
 func initialize() {
-    var slice, write int
-    var debug int
+    var slice, write, debug int
     var listen, data, rrdtool string
     flag.StringVar(&listen,  "listen",  config.DEFAULT_LISTEN,         "Set the port (+optional address) to listen at")
     flag.StringVar(&data,    "data",    config.DEFAULT_DATA_DIR,       "Set the data directory")
@@ -98,7 +97,7 @@ func initialize() {
 
     config.GlobalConfig.Listen        = listen
     config.GlobalConfig.DataDir       = data
-    config.GlobalConfig.RrdToolPath   = rrdtool
+    config.GlobalConfig.RrdToolPath   = path.Clean(rrdtool)
     config.GlobalConfig.Logger        = logger.NewConsoleLogger(logger.Severity(debug))
     config.GlobalConfig.SliceInterval = slice
     config.GlobalConfig.WriteInterval = write
@@ -143,9 +142,10 @@ func main() {
     msgchan := make(chan *types.Message)
     go msgSlicer(msgchan)
 
-    active_writers := make([]writers.Writer, 2)
-    active_writers[0] = &writers.Quartiles { }
-    active_writers[1] = &writers.YesOrNo   { }
+    active_writers := []writers.Writer {
+        &writers.Quartiles { },
+        &writers.YesOrNo   { },
+    }
 
     ticker := time.NewTicker(int64(config.GlobalConfig.WriteInterval) * 1000000000) // 10^9
     defer ticker.Stop()

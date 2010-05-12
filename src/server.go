@@ -5,6 +5,7 @@ import (
     "flag"
     "net"
     "os"
+    "os/signal"
     "path"
     "strconv"
     "strings"
@@ -48,7 +49,7 @@ func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
     }
 }
 
-func listen(msgchan chan<- *types.Message) {
+func listen(msgchan chan<- *types.Message, quit chan bool) {
     log.Debug("Starting listener on %s", config.GlobalConfig.UDPAddress)
 
     // Listen for requests
@@ -60,11 +61,21 @@ func listen(msgchan chan<- *types.Message) {
     // Ensure listener will be closed on return
     defer listener.Close()
 
+    listener.SetTimeout(100000000)
+    listener.SetReadTimeout(100000000)
+
     message := make([]byte, 256)
     for {
+        if _, ok := <-quit; ok {
+            log.Debug("Shutting down listener...")
+            return
+        }
+
         n, addr, error := listener.ReadFromUDP(message)
         if error != nil {
-            log.Debug("Cannot read UDP from %s: %s\n", addr, error)
+            if addr != nil {
+                log.Debug("Cannot read UDP from %s: %s\n", addr, error)
+            }
             continue
         }
         buf := bytes.NewBuffer(message[0:n])
@@ -121,10 +132,10 @@ func initialize() {
     slices = types.NewSlices(config.GlobalConfig.SliceInterval)
 }
 
-func rollupSlices(active_writers []writers.Writer) {
+func rollupSlices(active_writers []writers.Writer, force bool) {
     log.Debug("Rolling up slices")
 
-    closedSlices := slices.ExtractClosedSlices(false)
+    closedSlices := slices.ExtractClosedSlices(force)
     closedSlices.Do(func(elem interface {}) {
         slice := elem.(*types.Slice)
         for _, set := range slice.Sets {
@@ -135,11 +146,30 @@ func rollupSlices(active_writers []writers.Writer) {
     })
 }
 
+func dumper(active_writers []writers.Writer, quit chan bool) {
+    ticker := time.NewTicker(int64(config.GlobalConfig.WriteInterval) * 1000000000) // 10^9
+    defer ticker.Stop()
+
+    for {
+        if _, ok := <-quit; ok {
+            log.Debug("Shutting down dumper...")
+            return
+        }
+
+        <-ticker.C;
+        rollupSlices(active_writers, false)
+    }
+}
+
 func main() {
     initialize()
 
+    // Quit channel. Should be blocking (non-bufferred), so sender
+    // will wait till receiver will accept message (and shut down)
+    quit := make(chan bool)
+
     // Messages channel
-    msgchan := make(chan *types.Message)
+    msgchan := make(chan *types.Message, 1000)
     go msgSlicer(msgchan)
 
     active_writers := []writers.Writer {
@@ -147,14 +177,22 @@ func main() {
         &writers.YesOrNo   { },
     }
 
-    ticker := time.NewTicker(int64(config.GlobalConfig.WriteInterval) * 1000000000) // 10^9
-    defer ticker.Stop()
-    go func() {
-        for {
-            <-ticker.C;
-            rollupSlices(active_writers)
-        }
-    }()
 
-    listen(msgchan)
+    go listen(msgchan, quit)
+    go dumper(active_writers, quit)
+
+    for sig := range signal.Incoming {
+        var usig = sig.(signal.UnixSignal)
+        if usig == 1 || usig == 2 {
+            log.Warn("Received signal: %s", sig)
+            if usig == 2 {
+                log.Warn("Shutting down everything...")
+                // We have two background processes, so wait for both
+                quit <- true
+                quit <- true
+            }
+            rollupSlices(active_writers, true)
+            if usig == 2 { return }
+        }
+    }
 }

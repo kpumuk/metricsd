@@ -183,16 +183,16 @@ func main() {
 
     for sig := range signal.Incoming {
         var usig = sig.(signal.UnixSignal)
-        if usig == 1 || usig == 2 {
+        if usig == 1 || usig == 2 || usig == 15 {
             log.Warn("Received signal: %s", sig)
-            if usig == 2 {
+            if usig == 2 || usig == 15 {
                 log.Warn("Shutting down everything...")
                 // We have two background processes, so wait for both
                 quit <- true
                 quit <- true
             }
             rollupSlices(active_writers, true)
-            if usig == 2 { return }
+            if usig == 2 || usig == 15 { return }
         }
     }
 }

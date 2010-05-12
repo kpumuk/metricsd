@@ -1,6 +1,7 @@
 package logger
 
 import (
+    "fmt"
     "log"
 )
 
@@ -13,6 +14,18 @@ const (
     FATAL
     UNKNOWN
 )
+
+func (severity Severity) String() string {
+    switch severity {
+    case DEBUG:   return "D"
+    case INFO:    return "I"
+    case WARN:    return "W"
+    case ERROR:   return "E"
+    case FATAL:   return "F"
+    case UNKNOWN: return "U"
+    }
+    return "U"
+}
 
 type Logger interface {
     Debug(format string, v ...interface{})
@@ -71,6 +84,9 @@ func NewConsoleLogger(logLevel Severity) *ConsoleLogger {
     logger := &ConsoleLogger { }
     logger.base = &base {}
     logger.base.LogLevel = logLevel
-    logger.base.addFunc  = func(severity Severity, format string, v ...interface{}) { log.Stdoutf(format, v) }
+    logger.base.addFunc  = func(severity Severity, format string, v ...interface{}) {
+        format = fmt.Sprintf("%s %s", severity, format)
+        log.Stdoutf(format, v)
+    }
     return logger
 }

@@ -55,8 +55,8 @@ func (quartiles *Quartiles) Rollup(time int64, key string, samples *vector.IntVe
         hi_samples := samples.Slice(lo_c, hi_c)
         lo_sum := 0
         hi_sum := 0
-        lo_samples.Do(func(elem interface {}) { lo_sum += elem.(int) })
-        hi_samples.Do(func(elem interface {}) { hi_sum += elem.(int) })
+        lo_samples.Do(func(elem int) { lo_sum += elem })
+        hi_samples.Do(func(elem int) { hi_sum += elem })
         q1 := lo_sum / lo_c
         q2 := (lo_sum + hi_sum) / (lo_c + hi_c)
         q3 := hi_sum / hi_c
@@ -118,9 +118,8 @@ type YesOrNoItem struct {
 
 func (self *YesOrNo) Rollup(time int64, key string, samples *vector.IntVector) {
 	data := &YesOrNoItem {}
-	samples.Do(func(elem interface{}) {
-	    value := elem.(int)
-	    if value > 0 {
+	samples.Do(func(elem int) {
+	    if elem > 0 {
 	        data.ok++
         } else {
             data.fail++

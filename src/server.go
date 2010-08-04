@@ -62,8 +62,8 @@ func listen(msgchan chan<- *types.Message, quit chan bool) {
     defer listener.Close()
 
     // Timeout is 0.1 second
-    listener.SetTimeout(10e8)
-    listener.SetReadTimeout(10e8)
+    listener.SetTimeout(100000000)
+    listener.SetReadTimeout(100000000)
 
     message := make([]byte, 256)
     for {
@@ -148,7 +148,7 @@ func rollupSlices(active_writers []writers.Writer, force bool) {
 }
 
 func dumper(active_writers []writers.Writer, quit chan bool) {
-    ticker := time.NewTicker(int64(config.GlobalConfig.WriteInterval) * 10e9)
+    ticker := time.NewTicker(int64(config.GlobalConfig.WriteInterval) * 1000000000)
     defer ticker.Stop()
 
     for {

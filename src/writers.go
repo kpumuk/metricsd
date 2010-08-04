@@ -117,15 +117,15 @@ type YesOrNoItem struct {
 }
 
 func (self *YesOrNo) Rollup(time int64, key string, samples *vector.IntVector) {
-	data := &YesOrNoItem {}
-	samples.Do(func(elem int) {
-	    if elem > 0 {
-	        data.ok++
+    data := &YesOrNoItem {}
+    samples.Do(func(elem int) {
+        if elem > 0 {
+            data.ok++
         } else {
             data.fail++
         }
-	})
-	self.save(time, key, data)
+    })
+    self.save(time, key, data)
 }
 
 func (self *YesOrNo) save(t int64, key string, data *YesOrNoItem) {

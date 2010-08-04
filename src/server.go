@@ -178,7 +178,6 @@ func main() {
         &writers.YesOrNo   { },
     }
 
-
     go listen(msgchan, quit)
     go dumper(active_writers, quit)
 

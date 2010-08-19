@@ -106,12 +106,11 @@ func msgSlicer(msgchan <-chan *types.Message) {
 func initialize() {
     // Initialize options parser
     var slice, write, debug int
-    var listen, data, rrdtool, cfg string
+    var listen, data, cfg string
     var test bool
     flag.StringVar(&cfg,     "config",  config.DEFAULT_CONFIG_PATH,    "Set the path to config file")
     flag.StringVar(&listen,  "listen",  config.DEFAULT_LISTEN,         "Set the port (+optional address) to listen at")
     flag.StringVar(&data,    "data",    config.DEFAULT_DATA_DIR,       "Set the data directory")
-    flag.StringVar(&rrdtool, "rrdtool", config.DEFAULT_RRD_TOOL_PATH,  "Set the rrdtool absolute path")
     flag.IntVar   (&debug,   "debug",   int(config.DEFAULT_SEVERITY),  "Set the debug level, the lower - the more verbose (0-5)")
     flag.IntVar   (&slice,   "slice",   config.DEFAULT_SLICE_INTERVAL, "Set the slice interval in seconds")
     flag.IntVar   (&write,   "write",   config.DEFAULT_WRITE_INTERVAL, "Set the write interval in seconds")
@@ -129,9 +128,6 @@ func initialize() {
     }
     if data != config.DEFAULT_DATA_DIR {
         config.GlobalConfig.DataDir       = data
-    }
-    if rrdtool != config.DEFAULT_RRD_TOOL_PATH {
-        config.GlobalConfig.RrdToolPath   = path.Clean(rrdtool)
     }
     if debug != int(config.DEFAULT_SEVERITY) {
         config.GlobalConfig.LogLevel      = debug

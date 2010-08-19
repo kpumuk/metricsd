@@ -28,7 +28,7 @@ func lookupHost(addr *net.UDPAddr) string {
 
 func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
     log.Debug("Processing message from %s: %s", addr, buf)
-    var msg, source, name, svalue string
+    var source, name, svalue string
     var fields []string
 
     // Multiple metrics in a single message
@@ -173,7 +173,7 @@ func rollupSlices(active_writers []writers.Writer, force bool) {
         slice := elem.(*types.Slice)
         for _, set := range slice.Sets {
             for _, writer := range active_writers {
-                writer.Rollup(set.Time, set.Key, set.Values)
+                writer.Rollup(set)
             }
         }
     })

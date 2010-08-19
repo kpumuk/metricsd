@@ -1,21 +1,23 @@
 package writers
 
 import (
-    "container/vector"
     "fmt"
     "os"
     "rrd"
     "sort"
     "./config"
+    "./types"
 )
 
 
 type Writer interface {
-    Rollup(time int64, key string, samples *vector.IntVector)
+    Rollup(set *types.SampleSet)
 }
 
-func getRrdFile(t string, key string) string {
-    return fmt.Sprintf("%s/%s-%s.rrd", config.GlobalConfig.DataDir, t, key)
+func getRrdFile(t string, set *types.SampleSet) string {
+    dir := fmt.Sprintf("%s/%s", config.GlobalConfig.DataDir, set.Source)
+    os.MkdirAll(dir, 0755)
+    return fmt.Sprintf("%s/%s-%s.rrd", dir, set.Name, t)
 }
 
 /******************************************************************************/
@@ -27,18 +29,18 @@ type QuartilesItem struct {
     lo, q1, q2, q3, hi, total int
 }
 
-func (quartiles *Quartiles) Rollup(time int64, key string, samples *vector.IntVector) {
-    if samples.Len() < 2 { return }
-    sort.Sort(samples)
-    lo := samples.At(0)
-    hi := samples.At(samples.Len() - 1)
-    number := samples.Len()
+func (quartiles *Quartiles) Rollup(set *types.SampleSet) {
+    if set.Values.Len() < 2 { return }
+    sort.Sort(set.Values)
+    number := set.Values.Len()
+    lo := set.Values.At(0)
+    hi := set.Values.At(number - 1)
     lo_c := number / 2
     hi_c := number - lo_c
     data := &QuartilesItem {}
     if lo_c > 0 && hi_c > 0 {
-        lo_samples := samples.Slice(0, lo_c)
-        hi_samples := samples.Slice(lo_c, hi_c)
+        lo_samples := set.Values.Slice(0, lo_c)
+        hi_samples := set.Values.Slice(lo_c, hi_c)
         lo_sum := 0
         hi_sum := 0
         lo_samples.Do(func(elem int) { lo_sum += elem })
@@ -54,14 +56,14 @@ func (quartiles *Quartiles) Rollup(time int64, key string, samples *vector.IntVe
         data.hi = hi
         data.total = number
 
-        quartiles.save(time, key, data)
+        quartiles.save(set, data)
     }
 }
 
-func (self *Quartiles) save(t int64, key string, data *QuartilesItem) {
-    file := getRrdFile("quartiles", key)
+func (self *Quartiles) save(set *types.SampleSet, data *QuartilesItem) {
+    file := getRrdFile("quartiles", set)
     if _, err := os.Stat(file); err != nil {
-        err := rrd.Create(file, 10, t - 10, []string {
+        err := rrd.Create(file, 10, set.Time - 10, []string {
             "DS:q1:GAUGE:600:0:U",
             "DS:q2:GAUGE:600:0:U",
             "DS:q3:GAUGE:600:0:U",
@@ -84,7 +86,7 @@ func (self *Quartiles) save(t int64, key string, data *QuartilesItem) {
         }
     }
     err := rrd.Update(file, "q1:q2:q3:lo:hi:total", []string {
-        fmt.Sprintf("%d:%d:%d:%d:%d:%d:%d", t, data.q1, data.q2, data.q3, data.lo, data.hi, data.total),
+        fmt.Sprintf("%d:%d:%d:%d:%d:%d:%d", set.Time, data.q1, data.q2, data.q3, data.lo, data.hi, data.total),
     })
     if err != nil {
         config.GlobalConfig.Logger.Debug("Error occurred: %s", err)
@@ -101,22 +103,22 @@ type YesOrNoItem struct {
     fail uint64
 }
 
-func (self *YesOrNo) Rollup(time int64, key string, samples *vector.IntVector) {
+func (self *YesOrNo) Rollup(set *types.SampleSet) {
     data := &YesOrNoItem {}
-    samples.Do(func(elem int) {
+    set.Values.Do(func(elem int) {
         if elem >= 0 {
             data.ok++
         } else {
             data.fail++
         }
     })
-    self.save(time, key, data)
+    self.save(set, data)
 }
 
-func (self *YesOrNo) save(t int64, key string, data *YesOrNoItem) {
-    file := getRrdFile("yesno", key)
+func (self *YesOrNo) save(set *types.SampleSet, data *YesOrNoItem) {
+    file := getRrdFile("yesno", set)
     if _, err := os.Stat(file); err != nil {
-        err := rrd.Create(file, 10, t - 10, []string {
+        err := rrd.Create(file, 10, set.Time - 10, []string {
             "DS:ok:GAUGE:600:0:U",
             "DS:fail:GAUGE:600:0:U",
             "RRA:AVERAGE:0.5:1:25920",      // 72 hours at 1 sample per 10 secs
@@ -130,7 +132,7 @@ func (self *YesOrNo) save(t int64, key string, data *YesOrNoItem) {
         }
     }
     err := rrd.Update(file, "ok:fail", []string {
-        fmt.Sprintf("%d:%d:%d", t, data.ok, data.fail),
+        fmt.Sprintf("%d:%d:%d", set.Time, data.ok, data.fail),
     })
     if err != nil {
         config.GlobalConfig.Logger.Debug("Error occurred: %s", err)

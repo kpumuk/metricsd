@@ -36,27 +36,27 @@ Another command-line options:
 
 Gorrdpd uses very simple UDP-based protocol for collecting metrics. Here is what it looks like:
 
-1. `metric:value` — in this simplest case value will be collected in several RRD files; for each writer (see below) two files will be created: `writer-IP-metric.rrd` and `writer-all-metric.rrd`, where `writer` is a name of writer, `IP` — an IP address of the source host, `metric` — metric name.
+1. `metric:value` — in this simplest case value will be collected in several RRD files; for each writer (see below) two files will be created: `IP/metric-writer.rrd` and `all/metric-writer.rrd`, where `writer` is a name of writer, `IP` — an IP address of the source host, `metric` — metric name.
 2. `source@metric:value` — the same as previous, but instead of IP address of the source host, `source` will be used. If it's equal to `all`, no per-host RRD file will be created, only summary for all ones.
 3. `metric:value;source@metric:value` — it's possible to send several metrics update in a single packet. Please note: you have to specify `source` for every metric (metrics without source will be saved to IP-based RRD files).
 
 Examples:
 
     response_time:153
-        quartiles-all-response_time.rrd, quartiles-10.0.0.1-response_time.rrd,
-        yesno-all-response_time.rrd, yesno-10.0.0.1-response_time.rrd
+        all/response_time-quartiles.rrd, 10.0.0.1/response_time-quartiles.rrd,
+        all/response_time-yesno.rrd, 10.0.0.1/response_time-yesno.rrd
 
     app01@response_time:153
-        quartiles-all-response_time.rrd, quartiles-app01-response_time.rrd,
-        yesno-all-response_time.rrd, yesno-app01-response_time.rrd
+        all/response_time-quartiles.rrd, app01/response_time-quartiles.rrd,
+        all/response_time-yesno.rrd, app01/response_time-yesno.rrd
 
     all@response_time:153
-        quartiles-all-response_time.rrd, yesno-all-response_time.rrd
+        all/response_time-quartiles.rrd, all/response_time-yesno.rrd
 
     app01@response_time:153;all@requests:-1
-        quartiles-all-response_time.rrd, quartiles-app01-response_time.rrd,
-        yesno-all-response_time.rrd, yesno-app01-response_time.rrd,
-        quartiles-all-requests.rrd, yesno-all-requests.rrd
+        all/response_time-quartiles.rrd, app01/response_time-quartiles.rrd,
+        all/response_time-yesno.rrd, app01/response_time-yesno.rrd,
+        all/requests-quartiles.rrd, all/requests-yesno.rrd
 
 ## Writers
 

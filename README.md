@@ -4,10 +4,18 @@ A simple statistics collector, written in Google Go.
 
 ## Installation
 
-1. Make sure you have the a working Go environment. See the [install instructions](http://golang.org/doc/install.html). gorrd will always compile on the `release` tag.
+1. Make sure you have the a working Go environment. See the [install instructions](http://golang.org/doc/install.html). gorrdpd will always compile on the `release` tag.
 2. Install [gorrd](http://github.com/kpumuk/gorrd) package.
-2. git clone git://github.com/kpumuk/gorrdpd.git
-3. cd gorrdpd && make all
+2. `git clone git://github.com/kpumuk/gorrdpd.git`
+3. `cd gorrdpd && make install`
+
+By default gorrdpd will be install to the `/usr/local/gorrdpd` directory. To change it, use `DESTINATION` environment variable with `make install`:
+
+    DESTINATION=/opt/gorrdpd make install
+
+Please note: if you want to run `make install` with `sudo`, make sure that root user has all Go environment variables defined. Also you can use `-E` switch to preserve your current environment (needs `setenv` option set in `sudoers`):
+
+    sudo -E make install
 
 ## Configuration
 
@@ -37,14 +45,14 @@ Examples:
     response_time:153
         quartiles-all-response_time.rrd, quartiles-10.0.0.1-response_time.rrd,
         yesno-all-response_time.rrd, yesno-10.0.0.1-response_time.rrd
-        
+
     app01@response_time:153
         quartiles-all-response_time.rrd, quartiles-app01-response_time.rrd,
         yesno-all-response_time.rrd, yesno-app01-response_time.rrd
-        
+
     all@response_time:153
         quartiles-all-response_time.rrd, yesno-all-response_time.rrd
-        
+
     app01@response_time:153;all@requests:-1
         quartiles-all-response_time.rrd, quartiles-app01-response_time.rrd,
         yesno-all-response_time.rrd, yesno-app01-response_time.rrd,

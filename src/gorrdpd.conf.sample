@@ -1,0 +1,8 @@
+{
+    "Listen":        "0.0.0.0:6311",
+    "DataDir":       "./data",
+    "RrdToolPath":   "/usr/bin/rrdtool",
+    "LogLevel":      1,
+    "SliceInterval": 10,
+    "WriteInterval": 60
+}

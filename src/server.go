@@ -18,23 +18,12 @@ import (
 
 var (
     log logger.Logger
-    /* DNS names cache */
-    hostLookupCache map[string] string
     /* Slices */
     slices *types.Slices
 )
 
 func lookupHost(addr *net.UDPAddr) string {
-    ip := addr.IP.String()
-    if _, found := hostLookupCache[ip]; found { return hostLookupCache[ip] }
-
-    cname, _, error := net.LookupHost(ip)
-    if error != nil {
-        // if debug > 1 { log.Stderrf("Host lookup failed for IP %s: %s", ip, error) }
-        return ip
-    }
-    hostLookupCache[ip] = cname
-    return cname
+    return addr.IP.String()
 }
 
 func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
@@ -92,35 +81,60 @@ func msgSlicer(msgchan <-chan *types.Message) {
 }
 
 func initialize() {
+    // Initialize options parser
     var slice, write, debug int
-    var listen, data, rrdtool string
+    var listen, data, rrdtool, cfg string
+    var test bool
+    flag.StringVar(&cfg,     "config",  config.DEFAULT_CONFIG_PATH,    "Set the path to config file")
     flag.StringVar(&listen,  "listen",  config.DEFAULT_LISTEN,         "Set the port (+optional address) to listen at")
     flag.StringVar(&data,    "data",    config.DEFAULT_DATA_DIR,       "Set the data directory")
     flag.StringVar(&rrdtool, "rrdtool", config.DEFAULT_RRD_TOOL_PATH,  "Set the rrdtool absolute path")
     flag.IntVar   (&debug,   "debug",   int(config.DEFAULT_SEVERITY),  "Set the debug level, the lower - the more verbose (0-5)")
     flag.IntVar   (&slice,   "slice",   config.DEFAULT_SLICE_INTERVAL, "Set the slice interval in seconds")
     flag.IntVar   (&write,   "write",   config.DEFAULT_WRITE_INTERVAL, "Set the write interval in seconds")
+    flag.BoolVar  (&test,    "test",    false,                         "Validate config file and exit")
     flag.Parse()
 
-    if len(data) == 0 || data[0] != '/' {
-        wd, _ := os.Getwd()
-        data = path.Join(wd, data)
+    // Load config from a config file
+    config.GlobalConfig.Load(cfg)
+    if test { os.Exit(0) }
+
+    // Override options with values passed in command line arguments
+    // (but only if they have a value different from a default one)
+    if listen != config.DEFAULT_LISTEN {
+        config.GlobalConfig.Listen        = listen
+    }
+    if data != config.DEFAULT_DATA_DIR {
+        config.GlobalConfig.DataDir       = data
+    }
+    if rrdtool != config.DEFAULT_RRD_TOOL_PATH {
+        config.GlobalConfig.RrdToolPath   = path.Clean(rrdtool)
+    }
+    if debug != int(config.DEFAULT_SEVERITY) {
+        config.GlobalConfig.LogLevel      = debug
+    }
+    if slice != config.DEFAULT_SLICE_INTERVAL {
+        config.GlobalConfig.SliceInterval = slice
+    }
+    if write != config.DEFAULT_WRITE_INTERVAL {
+        config.GlobalConfig.WriteInterval = write
     }
 
-    config.GlobalConfig.Listen        = listen
-    config.GlobalConfig.DataDir       = data
-    config.GlobalConfig.RrdToolPath   = path.Clean(rrdtool)
-    config.GlobalConfig.Logger        = logger.NewConsoleLogger(logger.Severity(debug))
-    config.GlobalConfig.SliceInterval = slice
-    config.GlobalConfig.WriteInterval = write
+    // Make data dir path absolute
+    if len(config.GlobalConfig.DataDir) == 0 || config.GlobalConfig.DataDir[0] != '/' {
+        wd, _ := os.Getwd()
+        config.GlobalConfig.DataDir = path.Join(wd, config.GlobalConfig.DataDir)
+    }
 
+    // Create logger
+    config.GlobalConfig.Logger = logger.NewConsoleLogger(logger.Severity(config.GlobalConfig.LogLevel))
     log = config.GlobalConfig.Logger
+    log.Unknown("%s", config.GlobalConfig)
 
+    // Ensure data directory exists
     if _, err := os.Stat(data); err != nil {
         os.MkdirAll(data, 0755)
     }
-
-    hostLookupCache = make(map[string] string)
 
     address, error := net.ResolveUDPAddr(listen)
     if error != nil {

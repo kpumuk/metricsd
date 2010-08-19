@@ -84,7 +84,9 @@ func (slice *Slice) Less(sliceToCompare interface{}) bool {
 
 func (slice *Slice) Add(message *Message) {
     slice.getSampleSet(slice.getAllSampleSetKey(message)).Add(message)
-    slice.getSampleSet(slice.getMachineSampleSetKey(message)).Add(message)
+    if message.Source != "all" {
+        slice.getSampleSet(slice.getMachineSampleSetKey(message)).Add(message)
+    }
 }
 
 func (slice *Slice) String() string {

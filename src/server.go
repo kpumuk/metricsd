@@ -28,13 +28,36 @@ func lookupHost(addr *net.UDPAddr) string {
 
 func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
     log.Debug("Processing message from %s: %s", addr, buf)
+    var msg, source, name, svalue string
+    var fields []string
 
-    fields := strings.Split(buf, ":", 2)
+    // Temporary variable for message parsing
+    msg = buf
 
-    if value, error := strconv.Atoi(fields[1]); error != nil {
-        log.Debug("Number %s is not valid: %s", fields[1], error)
+    // Check if the message contains a source name
+    fields = strings.Split(msg, "@", 2)
+    if len(fields) == 2 {
+        source = fields[0]
+        msg = fields[1]
     } else {
-        msgchan <- types.NewMessage(lookupHost(addr), fields[0], value)
+        source = lookupHost(addr)
+    }
+
+    // Retrieve the metric name
+    fields = strings.Split(msg, ":", -1)
+    if len(fields) < 2 {
+        log.Debug("Message format is not valid: %s", buf)
+        return
+    } else {
+        name = fields[0]
+        svalue = fields[1]
+    }
+
+    // Parse the value
+    if value, error := strconv.Atoi(svalue); error != nil {
+        log.Debug("Number %s is not valid: %s", svalue, error)
+    } else {
+        msgchan <- types.NewMessage(source, name, value)
     }
 }
 
@@ -129,7 +152,7 @@ func initialize() {
     // Create logger
     config.GlobalConfig.Logger = logger.NewConsoleLogger(logger.Severity(config.GlobalConfig.LogLevel))
     log = config.GlobalConfig.Logger
-    log.Unknown("%s", config.GlobalConfig)
+    log.Debug("%s", config.GlobalConfig)
 
     // Ensure data directory exists
     if _, err := os.Stat(data); err != nil {

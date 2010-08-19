@@ -104,7 +104,7 @@ type YesOrNoItem struct {
 func (self *YesOrNo) Rollup(time int64, key string, samples *vector.IntVector) {
     data := &YesOrNoItem {}
     samples.Do(func(elem int) {
-        if elem > 0 {
+        if elem >= 0 {
             data.ok++
         } else {
             data.fail++

@@ -31,33 +31,32 @@ func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
     var msg, source, name, svalue string
     var fields []string
 
-    // Temporary variable for message parsing
-    msg = buf
+    // Multiple metrics in a single message
+    for _, msg := range strings.Split(msg, ";", -1) {
+        // Check if the message contains a source name
+        if idx := strings.Index(msg, "@"); idx >= 0 {
+            source = msg[0:idx]
+            msg = msg[idx+1:]
+        } else {
+            source = lookupHost(addr)
+        }
 
-    // Check if the message contains a source name
-    fields = strings.Split(msg, "@", 2)
-    if len(fields) == 2 {
-        source = fields[0]
-        msg = fields[1]
-    } else {
-        source = lookupHost(addr)
-    }
+        // Retrieve the metric name
+        fields = strings.Split(msg, ":", -1)
+        if len(fields) < 2 {
+            log.Debug("Message format is not valid: %s", buf)
+            return
+        } else {
+            name = fields[0]
+            svalue = fields[1]
+        }
 
-    // Retrieve the metric name
-    fields = strings.Split(msg, ":", -1)
-    if len(fields) < 2 {
-        log.Debug("Message format is not valid: %s", buf)
-        return
-    } else {
-        name = fields[0]
-        svalue = fields[1]
-    }
-
-    // Parse the value
-    if value, error := strconv.Atoi(svalue); error != nil {
-        log.Debug("Number %s is not valid: %s", svalue, error)
-    } else {
-        msgchan <- types.NewMessage(source, name, value)
+        // Parse the value
+        if value, error := strconv.Atoi(svalue); error != nil {
+            log.Debug("Number %s is not valid: %s", svalue, error)
+        } else {
+            msgchan <- types.NewMessage(source, name, value)
+        }
     }
 }
 

@@ -32,7 +32,7 @@ func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
     var fields []string
 
     // Multiple metrics in a single message
-    for _, msg := range strings.Split(msg, ";", -1) {
+    for _, msg := range strings.Split(buf, ";", -1) {
         // Check if the message contains a source name
         if idx := strings.Index(msg, "@"); idx >= 0 {
             source = msg[0:idx]

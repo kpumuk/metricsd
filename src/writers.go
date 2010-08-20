@@ -40,7 +40,7 @@ func (quartiles *Quartiles) Rollup(set *types.SampleSet) {
     data := &QuartilesItem {}
     if lo_c > 0 && hi_c > 0 {
         lo_samples := set.Values.Slice(0, lo_c)
-        hi_samples := set.Values.Slice(lo_c, hi_c)
+        hi_samples := set.Values.Slice(lo_c, lo_c + hi_c)
         lo_sum := 0
         hi_sum := 0
         lo_samples.Do(func(elem int) { lo_sum += elem })

@@ -1,21 +1,18 @@
-include $(GOROOT)/src/Make.$(GOARCH)
+include $(GOROOT)/src/Make.inc
 
 TARG=gorrdpd
 GOFILES=\
-	server.go \
+	server.go
+PREREQ=\
+	logger.$O \
+	config.$O \
+	types.$O \
+	writers.$O \
 
-server.$O: config.$O logger.$O types.$O writers.$O
-config.$O: logger.$O
-
-include $(GOROOT)/src/Make.pkg
-
-all: gorrdpd
+include $(GOROOT)/src/Make.cmd
 
 %.$O: %.go
 	${GC} $<
 
-gorrdpd: server.$O
-	${LD} -o $@ server.$O
-
-start: gorrdpd
+start: all
 	./gorrdpd -debug=0 -slice=1 -write=5 -data ./data

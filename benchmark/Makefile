@@ -1,18 +1,10 @@
-include $(GOROOT)/src/Make.$(GOARCH)
+include $(GOROOT)/src/Make.inc
 
 TARG=udp_generator
 GOFILES=\
 	udp_generator.go \
 
-include $(GOROOT)/src/Make.pkg
+include $(GOROOT)/src/Make.cmd
 
-all: udp_generator
-
-%.$O: %.go
-	${GC} $<
-
-udp_generator: udp_generator.$O
-	${LD} -o $@ udp_generator.$O
-
-start: udp_generator
+start: all
 	./udp_generator

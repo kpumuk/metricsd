@@ -189,7 +189,7 @@ func dumper(active_writers []writers.Writer, quit chan bool) {
             return
         }
 
-        <-ticker.C;
+        <-ticker.C
         rollupSlices(active_writers, false)
     }
 }
@@ -206,8 +206,8 @@ func main() {
     go msgSlicer(msgchan)
 
     active_writers := []writers.Writer {
-        &writers.Quartiles { },
-        &writers.YesOrNo   { },
+        &writers.Quartiles {},
+        &writers.YesOrNo   {},
     }
 
     go listen(msgchan, quit)

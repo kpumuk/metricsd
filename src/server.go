@@ -154,9 +154,9 @@ func initialize() {
         os.MkdirAll(data, 0755)
     }
 
-    address, error := net.ResolveUDPAddr(listen)
+    address, error := net.ResolveUDPAddr(config.GlobalConfig.Listen)
     if error != nil {
-        log.Fatal("Cannot parse \"%s\": %s", listen, error)
+        log.Fatal("Cannot parse \"%s\": %s", config.GlobalConfig.Listen, error)
         os.Exit(1)
     }
 

@@ -1,5 +1,7 @@
 _obj
 *.6
+*.8
 gorrdpd
 udp_generator
 data
+gorrdpd.conf

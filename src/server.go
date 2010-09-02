@@ -154,14 +154,15 @@ func initialize() {
         os.MkdirAll(data, 0755)
     }
 
+    // Resolve listen address
     address, error := net.ResolveUDPAddr(config.GlobalConfig.Listen)
     if error != nil {
         log.Fatal("Cannot parse \"%s\": %s", config.GlobalConfig.Listen, error)
         os.Exit(1)
     }
-
     config.GlobalConfig.UDPAddress = address
 
+    // Initialize slices structure
     slices = types.NewSlices(config.GlobalConfig.SliceInterval)
 }
 

@@ -7,20 +7,28 @@ import (
     "time"
 )
 
-/******************************************************************************/
+/***** Message ****************************************************************/
 
+// A Message contains information about message
 type Message struct {
-    Source string
-    Name   string
-    Value  int
+    Source string   // message source (IP address, DNS name, or custom string)
+    Name   string   // metric's name
+    Value  int      // metric's value
 }
 
+// NewMessage creates a new message instance.
 func NewMessage(source string, name string, value int) *Message {
     return &Message { Source: source, Name: name, Value: value };
 }
 
+// String converts an instance of message struct to string.
 func (message *Message) String() string {
-    return fmt.Sprintf("Message[source=%s, name=%s, value=%d]", message.Source, message.Name, message.Value)
+    return fmt.Sprintf(
+        "Message[source=%s, name=%s, value=%d]",
+        message.Source,
+        message.Name,
+        message.Value,
+    )
 }
 
 /******************************************************************************/
@@ -31,7 +39,10 @@ type Slices struct {
 }
 
 func NewSlices(sliceInterval int) *Slices {
-    return &Slices { Slices: make(map[int64] *Slice), Interval: int64(sliceInterval) }
+    return &Slices {
+        Slices:   make(map[int64] *Slice),
+        Interval: int64(sliceInterval),
+    }
 }
 
 func (slices *Slices) Add(message *Message) {
@@ -52,7 +63,11 @@ func (slices *Slices) ExtractClosedSlices(force bool) *vector.Vector {
 }
 
 func (slices *Slices) String() string {
-    return fmt.Sprintf("Slices[interval=%d, size=%d]", slices.Interval, len(slices.Slices))
+    return fmt.Sprintf(
+        "Slices[interval=%d, size=%d]",
+        slices.Interval,
+        len(slices.Slices),
+    )
 }
 
 func (slices *Slices) getCurrentSlice() *Slice {
@@ -90,7 +105,11 @@ func (slice *Slice) Add(message *Message) {
 }
 
 func (slice *Slice) String() string {
-    return fmt.Sprintf("Slice[time=%d, size=%d]", slice.Time, len(slice.Sets))
+    return fmt.Sprintf(
+        "Slice[time=%d, size=%d]",
+        slice.Time,
+        len(slice.Sets),
+    )
 }
 
 func (slice *Slice) getSampleSet(key, source, name string) *SampleSet {
@@ -119,7 +138,13 @@ type SampleSet struct {
 }
 
 func NewSampleSet(time int64, key, source, name string) *SampleSet {
-    return &SampleSet { Time: time, Key: key, Source: source, Name: name, Values: new(vector.IntVector) }
+    return &SampleSet {
+        Time:   time,
+        Key:    key,
+        Source: source,
+        Name:   name,
+        Values: new(vector.IntVector),
+    }
 }
 
 func (set *SampleSet) Add(message *Message) {
@@ -127,5 +152,10 @@ func (set *SampleSet) Add(message *Message) {
 }
 
 func (set *SampleSet) String() string {
-    return fmt.Sprintf("SampleSet[time=%d, key=%s, size=%d]", set.Time, set.Key, set.Values.Len())
+    return fmt.Sprintf(
+        "SampleSet[time=%d, key=%s, size=%d]",
+        set.Time,
+        set.Key,
+        set.Values.Len(),
+    )
 }

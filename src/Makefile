@@ -7,12 +7,16 @@ PREREQ=\
 	logger.$O \
 	config.$O \
 	types.$O \
-	writers.$O \
+	writers.$O
+WRITERS=$(wildcard writers/*.go)
 
 include $(GOROOT)/src/Make.cmd
 
 %.$O: %.go
 	${GC} $<
+
+writers.$O: writers.go $(WRITERS)
+	${GC} writers.go $(WRITERS)
 
 start: all
 	./gorrdpd -debug=0 -slice=1 -write=5

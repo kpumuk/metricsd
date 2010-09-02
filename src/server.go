@@ -174,7 +174,7 @@ func rollupSlices(active_writers []writers.Writer, force bool) {
         slice := elem.(*types.Slice)
         for _, set := range slice.Sets {
             for _, writer := range active_writers {
-                writer.Rollup(set)
+                writers.Rollup(writer, set)
             }
         }
     })

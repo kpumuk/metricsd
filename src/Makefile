@@ -15,4 +15,8 @@ include $(GOROOT)/src/Make.cmd
 	${GC} $<
 
 start: all
-	./gorrdpd -debug=0 -slice=1 -write=5 -data ./data
+	./gorrdpd -debug=0 -slice=1 -write=5
+
+godoc:
+	open http://localhost:6060/
+	godoc -path=. -http=:6060

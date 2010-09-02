@@ -49,17 +49,46 @@ func (slices *Slices) Add(message *Message) {
     slices.getCurrentSlice().Add(message)
 }
 
-func (slices *Slices) ExtractClosedSlices(force bool) *vector.Vector {
-    current := slices.getCurrentSliceNumber()
-    closedSlices := new(vector.Vector)
-    for number, slice := range slices.Slices {
-        if number < current || force {
-            closedSlices.Push(slice)
-            slices.Slices[number] = nil, false
-        }
-    }
+func (slices *Slices) ExtractClosedSlices(force bool) (closedSlices *vector.Vector) {
+    var current int64
+    if force { current = -1 } else { current = slices.getCurrentSliceNumber() }
+
+    // Calculate total number of closed slices (to avoid vector reallocs)
+    totalClosedSlices := 0
+    slices.eachClosedSlice(current, func(number int64, slice *Slice) {
+        totalClosedSlices += 1
+    })
+
+    // Create an array to store slices
+    closedSlices = new(vector.Vector).Resize(0, totalClosedSlices)
+    slices.eachClosedSlice(current, func(number int64, slice *Slice) {
+        closedSlices.Push(slice)
+        slices.Slices[number] = nil, false
+    })
     sort.Sort(closedSlices)
-    return closedSlices
+    return
+}
+
+// ExtractClosedSampleSets finds closed slices, and stores all sample sets from them
+// in an array. Processed slices will be removed from the list of active slices.
+func (slices *Slices) ExtractClosedSampleSets(force bool) (closedSampleSets *vector.Vector) {
+    var current int64
+    if force { current = -1 } else { current = slices.getCurrentSliceNumber() }
+
+    // Calculate total number of closed sample sets (to avoid vector reallocs)
+    totalSampleSets := 0
+    slices.eachClosedSlice(current, func(number int64, slice *Slice) {
+        totalSampleSets += len(slice.Sets)
+    })
+
+    // Create an array to store sample sets
+    closedSampleSets = new(vector.Vector).Resize(0, totalSampleSets)
+    slices.eachClosedSlice(current, func(number int64, slice *Slice) {
+        for _, set := range slice.Sets { closedSampleSets.Push(set) }
+        slices.Slices[number] = nil, false
+    })
+    sort.Sort(closedSampleSets)
+    return
 }
 
 func (slices *Slices) String() string {
@@ -80,6 +109,14 @@ func (slices *Slices) getCurrentSlice() *Slice {
 
 func (slices *Slices) getCurrentSliceNumber() int64 {
     return time.Seconds() / slices.Interval
+}
+
+func (slices *Slices) eachClosedSlice(current int64, f func(number int64, slice *Slice)) {
+    for number, slice := range slices.Slices {
+        if number < current || current < 0 {
+            f(number, slice)
+        }
+    }
 }
 
 /******************************************************************************/
@@ -149,6 +186,11 @@ func NewSampleSet(time int64, key, source, name string) *SampleSet {
 
 func (set *SampleSet) Add(message *Message) {
     set.Values.Push(message.Value)
+}
+
+func (set *SampleSet) Less(setToCompare interface{}) bool {
+    return set.Key < setToCompare.(*SampleSet).Key ||
+        (set.Key == setToCompare.(*SampleSet).Key && set.Time < setToCompare.(*SampleSet).Time)
 }
 
 func (set *SampleSet) String() string {

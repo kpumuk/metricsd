@@ -15,6 +15,7 @@ const (
     DEFAULT_SEVERITY       = logger.INFO
     DEFAULT_SLICE_INTERVAL = 10
     DEFAULT_WRITE_INTERVAL = 60
+    DEFAULT_BATCH_WRITES   = false
 )
 
 type Configuration struct {
@@ -24,19 +25,19 @@ type Configuration struct {
     LogLevel      int
     SliceInterval int
     WriteInterval int
+    BatchWrites   bool
     // Values for internal usage
     UDPAddress    *net.UDPAddr
     Logger        logger.Logger
 }
 
 var GlobalConfig = &Configuration {
-    DEFAULT_LISTEN,
-    DEFAULT_DATA_DIR,
-    int(DEFAULT_SEVERITY),
-    DEFAULT_SLICE_INTERVAL,
-    DEFAULT_WRITE_INTERVAL,
-    nil,
-    nil,
+    Listen:        DEFAULT_LISTEN,
+    DataDir:       DEFAULT_DATA_DIR,
+    LogLevel:      int(DEFAULT_SEVERITY),
+    SliceInterval: DEFAULT_SLICE_INTERVAL,
+    WriteInterval: DEFAULT_WRITE_INTERVAL,
+    BatchWrites:   DEFAULT_BATCH_WRITES,
 }
 
 func (config *Configuration) Load(path string) {
@@ -57,11 +58,12 @@ func (config *Configuration) Load(path string) {
 
 func (config *Configuration) String() string {
     return fmt.Sprintf(
-        "Configuration:\nListen: \t%s\nData dir:\t%s\nLog level:\t%s\nSlice interval:\t%d\nWrite interval:\t%d",
+        "Configuration:\nListen: \t%s\nData dir:\t%s\nLog level:\t%s\nSlice interval:\t%d\nWrite interval:\t%d\nBatch Writes:\t%t\n",
         GlobalConfig.Listen,
         GlobalConfig.DataDir,
         logger.Severity(GlobalConfig.LogLevel),
         GlobalConfig.SliceInterval,
         GlobalConfig.WriteInterval,
+        GlobalConfig.BatchWrites,
     )
 }

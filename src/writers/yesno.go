@@ -1,6 +1,7 @@
 package writers
 
 import (
+    "container/vector"
     "fmt"
     "./types"
 )
@@ -9,6 +10,7 @@ type YesOrNo struct {
 }
 
 type YesOrNoItem struct {
+    time int64
     ok   uint64
     fail uint64
 }
@@ -21,6 +23,10 @@ func (self *YesOrNo) Rollup(set *types.SampleSet) {
     Rollup(self, set)
 }
 
+func (self *YesOrNo) BatchRollup(sets *vector.Vector) {
+    BatchRollup(self, sets)
+}
+
 func (self *YesOrNo) rollupData(set *types.SampleSet) (data dataItem) {
     var ok, fail uint64
     set.Values.Do(func(elem int) {
@@ -30,8 +36,12 @@ func (self *YesOrNo) rollupData(set *types.SampleSet) (data dataItem) {
             fail++
         }
     })
-    data = &YesOrNoItem { ok: ok, fail: fail }
+    data = &YesOrNoItem { time: set.Time, ok: ok, fail: fail }
     return
+}
+
+func (self *YesOrNoItem) String() string {
+    return fmt.Sprintf("YesOrNoItem[time=%d, ok=%d, fail=%d]", self.time, self.ok, self.fail)
 }
 
 func (*YesOrNoItem) rrdInfo() []string {
@@ -48,6 +58,6 @@ func (*YesOrNoItem) rrdTemplate() string {
     return "ok:fail"
 }
 
-func (self *YesOrNoItem) rrdString(time int64) string {
-    return fmt.Sprintf("%d:%d:%d", time, self.ok, self.fail)
+func (self *YesOrNoItem) rrdString() string {
+    return fmt.Sprintf("%d:%d:%d", self.time, self.ok, self.fail)
 }

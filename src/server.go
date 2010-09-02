@@ -106,13 +106,14 @@ func initialize() {
     // Initialize options parser
     var slice, write, debug int
     var listen, data, cfg string
-    var test bool
+    var test, batch bool
     flag.StringVar(&cfg,     "config",  config.DEFAULT_CONFIG_PATH,    "Set the path to config file")
     flag.StringVar(&listen,  "listen",  config.DEFAULT_LISTEN,         "Set the port (+optional address) to listen at")
     flag.StringVar(&data,    "data",    config.DEFAULT_DATA_DIR,       "Set the data directory")
     flag.IntVar   (&debug,   "debug",   int(config.DEFAULT_SEVERITY),  "Set the debug level, the lower - the more verbose (0-5)")
     flag.IntVar   (&slice,   "slice",   config.DEFAULT_SLICE_INTERVAL, "Set the slice interval in seconds")
     flag.IntVar   (&write,   "write",   config.DEFAULT_WRITE_INTERVAL, "Set the write interval in seconds")
+    flag.BoolVar  (&batch,   "batch",   config.DEFAULT_BATCH_WRITES,   "Set the value indicating whether batch RRD updates should be used")
     flag.BoolVar  (&test,    "test",    false,                         "Validate config file and exit")
     flag.Parse()
 
@@ -136,6 +137,9 @@ func initialize() {
     }
     if write != config.DEFAULT_WRITE_INTERVAL {
         config.GlobalConfig.WriteInterval = write
+    }
+    if batch != config.DEFAULT_BATCH_WRITES {
+        config.GlobalConfig.BatchWrites   = batch
     }
 
     // Make data dir path absolute
@@ -169,15 +173,22 @@ func initialize() {
 func rollupSlices(active_writers []writers.Writer, force bool) {
     log.Debug("Rolling up slices")
 
-    closedSlices := slices.ExtractClosedSlices(force)
-    closedSlices.Do(func(elem interface {}) {
-        slice := elem.(*types.Slice)
-        for _, set := range slice.Sets {
-            for _, writer := range active_writers {
-                writers.Rollup(writer, set)
-            }
+    if config.GlobalConfig.BatchWrites {
+        closedSampleSets := slices.ExtractClosedSampleSets(force)
+        for _, writer := range active_writers {
+            writers.BatchRollup(writer, closedSampleSets)
         }
-    })
+    } else {
+        closedSlices := slices.ExtractClosedSlices(force)
+        closedSlices.Do(func(elem interface {}) {
+            slice := elem.(*types.Slice)
+            for _, set := range slice.Sets {
+                for _, writer := range active_writers {
+                    writers.Rollup(writer, set)
+                }
+            }
+        })
+    }
 }
 
 func dumper(active_writers []writers.Writer, quit chan bool) {

@@ -1,6 +1,7 @@
 package writers
 
 import (
+    "container/vector"
     "fmt"
     "sort"
     "./types"
@@ -10,6 +11,7 @@ type Quartiles struct {
 }
 
 type QuartilesItem struct {
+    time int64
     lo, q1, q2, q3, hi, total int
 }
 
@@ -19,6 +21,10 @@ func (self *Quartiles) Name() string {
 
 func (self *Quartiles) Rollup(set *types.SampleSet) {
     Rollup(self, set)
+}
+
+func (self *Quartiles) BatchRollup(sets *vector.Vector) {
+    BatchRollup(self, sets)
 }
 
 func (self *Quartiles) rollupData(set *types.SampleSet) (data dataItem) {
@@ -41,6 +47,7 @@ func (self *Quartiles) rollupData(set *types.SampleSet) (data dataItem) {
         q3 := hi_sum / hi_c
 
         data = &QuartilesItem {
+            time: set.Time,
             lo: lo,
             q1: q1,
             q2: q2,
@@ -68,6 +75,19 @@ func (self *Quartiles) rollupData(set *types.SampleSet) (data dataItem) {
 //
 // }
 
+func (self *QuartilesItem) String() string {
+    return fmt.Sprintf(
+        "QuartilesItem[time=%d, lo=%d, q1=%d, q2=%d, q3=%d, hi=%d, total=%d]",
+        self.time,
+        self.lo,
+        self.q1,
+        self.q2,
+        self.q3,
+        self.hi,
+        self.total,
+    )
+}
+
 func (*QuartilesItem) rrdInfo() []string {
     return []string {
         "DS:q1:GAUGE:600:0:U",
@@ -92,10 +112,10 @@ func (*QuartilesItem) rrdTemplate() string {
     return "q1:q2:q3:lo:hi:total"
 }
 
-func (self *QuartilesItem) rrdString(time int64) string {
+func (self *QuartilesItem) rrdString() string {
     return fmt.Sprintf(
         "%d:%d:%d:%d:%d:%d:%d",
-        time,
+        self.time,
         self.q1,
         self.q2,
         self.q3,

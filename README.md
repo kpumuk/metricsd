@@ -25,7 +25,9 @@ Configuration is stored in JSON format, and you can find an example in `gorrdpd.
 * `DataDir` (`-data`) — set the data directory. Default is `"./data"`;
 * `LogLevel` (`-debug`) — set the debug level, the lower - the more verbose (0-5). Default is `1`;
 * `SliceInterval` (`-slice`) — set the slice interval in seconds. Default is `10`;
-* `WriteInterval` (`-write`) — set the write interval in seconds. Default is `60`.
+* `WriteInterval` (`-write`) — set the write interval in seconds. Default is `60`;
+* `BatchWrites` (`-batch`) — set the value indicating whether batch RRD updates should be used. Default is `false`;
+* `LookupDns` (`-lookup`) — set the value indicating whether reverse DNS lookup should be performed for sources.
 
 Another command-line options:
 

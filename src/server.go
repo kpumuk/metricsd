@@ -110,7 +110,7 @@ func initialize() {
     flag.IntVar   (&slice,   "slice",   config.DEFAULT_SLICE_INTERVAL, "Set the slice interval in seconds")
     flag.IntVar   (&write,   "write",   config.DEFAULT_WRITE_INTERVAL, "Set the write interval in seconds")
     flag.BoolVar  (&batch,   "batch",   config.DEFAULT_BATCH_WRITES,   "Set the value indicating whether batch RRD updates should be used")
-    flag.BoolVar  (&lookup,  "lookup",  config.DEFAULT_LOOKUP_DNS,     "Set the value indicating whether reverse DNS lookup should be used for source")
+    flag.BoolVar  (&lookup,  "lookup",  config.DEFAULT_LOOKUP_DNS,     "Set the value indicating whether reverse DNS lookup should be performed for sources")
     flag.BoolVar  (&test,    "test",    false,                         "Validate config file and exit")
     flag.Parse()
 

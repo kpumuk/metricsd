@@ -26,3 +26,7 @@ start: all
 godoc:
 	open http://localhost:6060/
 	godoc -path=. -http=:6060
+
+clean:
+	rm -rf *.o *.a *.[$(OS)] [$(OS)].out $(CLEANFILES)
+	make -C stdlib clean

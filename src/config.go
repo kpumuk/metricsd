@@ -16,6 +16,7 @@ const (
     DEFAULT_SLICE_INTERVAL = 10
     DEFAULT_WRITE_INTERVAL = 60
     DEFAULT_BATCH_WRITES   = false
+    DEFAULT_LOOKUP_DNS     = false
 )
 
 type Configuration struct {
@@ -26,6 +27,7 @@ type Configuration struct {
     SliceInterval int
     WriteInterval int
     BatchWrites   bool
+    LookupDns     bool
     // Values for internal usage
     UDPAddress    *net.UDPAddr
     Logger        logger.Logger
@@ -38,6 +40,7 @@ var GlobalConfig = &Configuration {
     SliceInterval: DEFAULT_SLICE_INTERVAL,
     WriteInterval: DEFAULT_WRITE_INTERVAL,
     BatchWrites:   DEFAULT_BATCH_WRITES,
+    LookupDns:     DEFAULT_LOOKUP_DNS,
 }
 
 func (config *Configuration) Load(path string) {
@@ -58,12 +61,13 @@ func (config *Configuration) Load(path string) {
 
 func (config *Configuration) String() string {
     return fmt.Sprintf(
-        "Configuration:\nListen: \t%s\nData dir:\t%s\nLog level:\t%s\nSlice interval:\t%d\nWrite interval:\t%d\nBatch Writes:\t%t\n",
+        "Configuration:\nListen: \t%s\nData dir:\t%s\nLog level:\t%s\nSlice interval:\t%d\nWrite interval:\t%d\nBatch Writes:\t%t\nLookup DNS:\t%t\n",
         GlobalConfig.Listen,
         GlobalConfig.DataDir,
         logger.Severity(GlobalConfig.LogLevel),
         GlobalConfig.SliceInterval,
         GlobalConfig.WriteInterval,
         GlobalConfig.BatchWrites,
+        GlobalConfig.LookupDns,
     )
 }

@@ -4,6 +4,7 @@ TARG=gorrdpd
 GOFILES=\
 	server.go
 PREREQ=\
+	stdlib.make \
 	logger.$O \
 	config.$O \
 	types.$O \

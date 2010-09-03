@@ -13,16 +13,35 @@ import (
     "./parser"
     "./types"
     "./writers"
+    "gorrdpd/stdlib"
 )
 
 var (
+    /* Logger instance */
     log logger.Logger
+    /* DNS names cache */
+    hostLookupCache map[string] string
     /* Slices */
     slices *types.Slices
 )
 
-func lookupHost(addr *net.UDPAddr) string {
-    return addr.IP.String()
+func lookupHost(addr *net.UDPAddr) (hostname string) {
+    ip := addr.IP.String()
+    if !config.GlobalConfig.LookupDns { return ip }
+
+    // Do we have resolved this address before?
+    if _, found := hostLookupCache[ip]; found { return hostLookupCache[ip] }
+
+    // Try to lookup
+    hostname, error := stdlib.GetRemoteHostName(ip)
+    if error != nil {
+        log.Debug("Error while resolving host name %s: %s", addr, error)
+        return ip
+    }
+    // Cache the lookup result
+    hostLookupCache[ip] = hostname
+
+    return
 }
 
 func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
@@ -83,7 +102,7 @@ func initialize() {
     // Initialize options parser
     var slice, write, debug int
     var listen, data, cfg string
-    var test, batch bool
+    var test, batch, lookup bool
     flag.StringVar(&cfg,     "config",  config.DEFAULT_CONFIG_PATH,    "Set the path to config file")
     flag.StringVar(&listen,  "listen",  config.DEFAULT_LISTEN,         "Set the port (+optional address) to listen at")
     flag.StringVar(&data,    "data",    config.DEFAULT_DATA_DIR,       "Set the data directory")
@@ -91,6 +110,7 @@ func initialize() {
     flag.IntVar   (&slice,   "slice",   config.DEFAULT_SLICE_INTERVAL, "Set the slice interval in seconds")
     flag.IntVar   (&write,   "write",   config.DEFAULT_WRITE_INTERVAL, "Set the write interval in seconds")
     flag.BoolVar  (&batch,   "batch",   config.DEFAULT_BATCH_WRITES,   "Set the value indicating whether batch RRD updates should be used")
+    flag.BoolVar  (&lookup,  "lookup",  config.DEFAULT_LOOKUP_DNS,     "Set the value indicating whether reverse DNS lookup should be used for source")
     flag.BoolVar  (&test,    "test",    false,                         "Validate config file and exit")
     flag.Parse()
 
@@ -117,6 +137,9 @@ func initialize() {
     }
     if batch != config.DEFAULT_BATCH_WRITES {
         config.GlobalConfig.BatchWrites   = batch
+    }
+    if lookup != config.DEFAULT_LOOKUP_DNS {
+        config.GlobalConfig.LookupDns     = lookup
     }
 
     // Make data dir path absolute
@@ -145,6 +168,11 @@ func initialize() {
 
     // Initialize slices structure
     slices = types.NewSlices(config.GlobalConfig.SliceInterval)
+
+    // Initialize host lookup cache
+    if config.GlobalConfig.LookupDns {
+        hostLookupCache = make(map[string] string)
+    }
 }
 
 func rollupSlices(active_writers []writers.Writer, force bool) {

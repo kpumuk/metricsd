@@ -4,5 +4,6 @@
     "LogLevel":      1,
     "SliceInterval": 10,
     "WriteInterval": 60,
-    "BatchWrites":   false
+    "BatchWrites":   false,
+    "LookupDns":     false
 }

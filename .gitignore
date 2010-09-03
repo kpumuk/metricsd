@@ -1,6 +1,13 @@
 _obj
+_test
 *.6
 *.8
+*.o
+*.so
+*.out
+*.go~
+*.cgo?.*
+_cgo_*
 gorrdpd
 udp_generator
 data

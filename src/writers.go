@@ -37,50 +37,62 @@ func BatchRollup(writer Writer, sets *vector.Vector) {
     data := new(vector.Vector).Resize(0, sets.Len())
     args := make([]string, 0, sets.Len())
 
-    var from, cur int
+    var from int
     var prevKey string
-    var firstItem *dataItem
-    var pushed bool
-    var elem interface{}
 
-    for cur, elem = range *sets {
+    for cur, elem := range *sets {
         set := elem.(*types.SampleSet)
         if cur == 0 { prevKey = set.Key }
 
-        pushed = false
+        // Next item in the sequence of samples
+        pushed := false
         if prevKey == set.Key {
             if item := writer.rollupData(set); item != nil {
                 data.Push(&item)
-                if firstItem == nil { firstItem = &item }
             }
             pushed = true
         }
 
+        // Reached a new sequence or the end of samples list
         if prevKey != set.Key || cur == sets.Len() - 1 {
-            if firstItem != nil {
-                firstSet := sets.At(from).(*types.SampleSet)
-                updateRrd(writer, firstSet, *firstItem, func() []string {
-                    ar := args[0:data.Len()]
-                    for j, el := range *data {
-                        ar[j] = el.(*dataItem).rrdString()
-                    }
-                    return ar
-                })
-            }
+            batchRollup(writer, from, sets, data, &args)
 
-            firstItem = nil
             from      = cur
             prevKey   = set.Key
             data.Resize(0, 0)
         }
 
+        // A new sequence beginning
         if !pushed {
             if item := writer.rollupData(set); item != nil {
                 data.Push(&item)
-                if firstItem == nil { firstItem = &item }
+
+                // The last item in the samples list
+                if cur == sets.Len() - 1 {
+                    batchRollup(writer, from, sets, data, &args)
+                }
             }
         }
     }
+}
+
+func batchRollup(writer Writer, from int, sets *vector.Vector, data *vector.Vector, buf *[]string) {
+    // Nothing to save
+    if data.Len() == 0 { return }
+
+    // Retrieve the first data item (used to get RRD-related information)
+    firstItem := data.At(0).(*dataItem)
+    // Retrieve the first sample set (used to generate RRD file name)
+    firstSet  := sets.At(from).(*types.SampleSet)
+    // Update RRD database
+    updateRrd(writer, firstSet, *firstItem, func() (args []string) {
+        // Serialize all data items to buffer
+        args = (*buf)[0:data.Len()]
+        for i, elem := range *data {
+            args[i] = elem.(*dataItem).rrdString()
+        }
+        return
+    })
 }
 
 func updateRrd(writer Writer, set *types.SampleSet, data dataItem, f func() []string) {

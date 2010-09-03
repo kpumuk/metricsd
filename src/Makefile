@@ -7,6 +7,7 @@ PREREQ=\
 	logger.$O \
 	config.$O \
 	types.$O \
+	parser.$O \
 	writers.$O
 WRITERS=$(wildcard writers/*.go)
 

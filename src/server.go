@@ -7,11 +7,10 @@ import (
     "os"
     "os/signal"
     "path"
-    "strconv"
-    "strings"
     "time"
     "./config"
     "./logger"
+    "./parser"
     "./types"
     "./writers"
 )
@@ -28,36 +27,14 @@ func lookupHost(addr *net.UDPAddr) string {
 
 func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
     log.Debug("Processing message from %s: %s", addr, buf)
-    var source, name, svalue string
-    var fields []string
-
-    // Multiple metrics in a single message
-    for _, msg := range strings.Split(buf, ";", -1) {
-        // Check if the message contains a source name
-        if idx := strings.Index(msg, "@"); idx >= 0 {
-            source = msg[0:idx]
-            msg = msg[idx+1:]
+    parser.Parse(buf, func(message *types.Message, err os.Error) {
+        if err == nil {
+            if message.Source == "" { message.Source = lookupHost(addr) }
+            msgchan <- message
         } else {
-            source = lookupHost(addr)
+            log.Debug("Error while parsing a message: %s", err)
         }
-
-        // Retrieve the metric name
-        fields = strings.Split(msg, ":", -1)
-        if len(fields) < 2 {
-            log.Debug("Message format is not valid: %s", buf)
-            return
-        } else {
-            name = fields[0]
-            svalue = fields[1]
-        }
-
-        // Parse the value
-        if value, error := strconv.Atoi(svalue); error != nil {
-            log.Debug("Number %s is not valid: %s", svalue, error)
-        } else {
-            msgchan <- types.NewMessage(source, name, value)
-        }
-    }
+    })
 }
 
 func listen(msgchan chan<- *types.Message, quit chan bool) {

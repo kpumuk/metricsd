@@ -25,76 +25,42 @@ var (
     slices *types.Slices
 )
 
-func lookupHost(addr *net.UDPAddr) (hostname string) {
-    ip := addr.IP.String()
-    if !config.GlobalConfig.LookupDns { return ip }
+func main() {
+    // Initialize gorrdpd
+    initialize()
 
-    // Do we have resolved this address before?
-    if _, found := hostLookupCache[ip]; found { return hostLookupCache[ip] }
+    // Quit channel. Should be blocking (non-bufferred), so sender
+    // will wait till receiver will accept message (and shut down)
+    quit := make(chan bool)
 
-    // Try to lookup
-    hostname, error := stdlib.GetRemoteHostName(ip)
-    if error != nil {
-        log.Debug("Error while resolving host name %s: %s", addr, error)
-        return ip
+    // Messages channel
+    msgchan := make(chan *types.Message, 1000)
+
+    // Active writers
+    active_writers := []writers.Writer {
+        &writers.Quartiles {},
+        &writers.YesOrNo   {},
     }
-    // Cache the lookup result
-    hostLookupCache[ip] = hostname
 
-    return
-}
+    // Start background Go routines
+    go slicer(msgchan)
+    go listen(msgchan, quit)
+    go dumper(active_writers, quit)
 
-func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
-    log.Debug("Processing message from %s: %s", addr, buf)
-    parser.Parse(buf, func(message *types.Message, err os.Error) {
-        if err == nil {
-            if message.Source == "" { message.Source = lookupHost(addr) }
-            msgchan <- message
-        } else {
-            log.Debug("Error while parsing a message: %s", err)
-        }
-    })
-}
-
-func listen(msgchan chan<- *types.Message, quit chan bool) {
-    log.Debug("Starting listener on %s", config.GlobalConfig.UDPAddress)
-
-    // Listen for requests
-    listener, error := net.ListenUDP("udp", config.GlobalConfig.UDPAddress)
-    if error != nil {
-        log.Fatal("Cannot listen: %s", error)
-        os.Exit(1)
-    }
-    // Ensure listener will be closed on return
-    defer listener.Close()
-
-    // Timeout is 0.1 second
-    listener.SetTimeout(100000000)
-    listener.SetReadTimeout(100000000)
-
-    message := make([]byte, 256)
-    for {
-        if _, ok := <-quit; ok {
-            log.Debug("Shutting down listener...")
-            return
-        }
-
-        n, addr, error := listener.ReadFromUDP(message)
-        if error != nil {
-            if addr != nil {
-                log.Debug("Cannot read UDP from %s: %s\n", addr, error)
+    // Handle signals
+    for sig := range signal.Incoming {
+        var usig = sig.(signal.UnixSignal)
+        if usig == 1 || usig == 2 || usig == 15 {
+            log.Warn("Received signal: %s", sig)
+            if usig == 2 || usig == 15 {
+                log.Warn("Shutting down everything...")
+                // We have two background processes, so wait for both
+                quit <- true
+                quit <- true
             }
-            continue
+            rollupSlices(active_writers, true)
+            if usig == 2 || usig == 15 { return }
         }
-        buf := bytes.NewBuffer(message[0:n])
-        process(addr, buf.String(), msgchan)
-    }
-}
-
-func msgSlicer(msgchan <-chan *types.Message) {
-    for {
-        message := <-msgchan
-        slices.Add(message)
     }
 }
 
@@ -175,6 +141,98 @@ func initialize() {
     }
 }
 
+/***** Go routines ************************************************************/
+
+func listen(msgchan chan<- *types.Message, quit chan bool) {
+    log.Debug("Starting listener on %s", config.GlobalConfig.UDPAddress)
+
+    // Listen for requests
+    listener, error := net.ListenUDP("udp", config.GlobalConfig.UDPAddress)
+    if error != nil {
+        log.Fatal("Cannot listen: %s", error)
+        os.Exit(1)
+    }
+    // Ensure listener will be closed on return
+    defer listener.Close()
+
+    // Timeout is 0.1 second
+    listener.SetTimeout(100000000)
+    listener.SetReadTimeout(100000000)
+
+    message := make([]byte, 256)
+    for {
+        if _, ok := <-quit; ok {
+            log.Debug("Shutting down listener...")
+            return
+        }
+
+        n, addr, error := listener.ReadFromUDP(message)
+        if error != nil {
+            if addr != nil {
+                log.Debug("Cannot read UDP from %s: %s\n", addr, error)
+            }
+            continue
+        }
+        buf := bytes.NewBuffer(message[0:n])
+        process(addr, buf.String(), msgchan)
+    }
+}
+
+func slicer(msgchan <-chan *types.Message) {
+    for {
+        message := <-msgchan
+        slices.Add(message)
+    }
+}
+
+func dumper(active_writers []writers.Writer, quit chan bool) {
+    ticker := time.NewTicker(int64(config.GlobalConfig.WriteInterval) * 1000000000)
+    defer ticker.Stop()
+
+    for {
+        if _, ok := <-quit; ok {
+            log.Debug("Shutting down dumper...")
+            return
+        }
+
+        <-ticker.C
+        rollupSlices(active_writers, false)
+    }
+}
+
+/***** Helper functions *******************************************************/
+
+func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
+    log.Debug("Processing message from %s: %s", addr, buf)
+    parser.Parse(buf, func(message *types.Message, err os.Error) {
+        if err == nil {
+            if message.Source == "" { message.Source = lookupHost(addr) }
+            msgchan <- message
+        } else {
+            log.Debug("Error while parsing a message: %s", err)
+        }
+    })
+}
+
+func lookupHost(addr *net.UDPAddr) (hostname string) {
+    ip := addr.IP.String()
+    if !config.GlobalConfig.LookupDns { return ip }
+
+    // Do we have resolved this address before?
+    if _, found := hostLookupCache[ip]; found { return hostLookupCache[ip] }
+
+    // Try to lookup
+    hostname, error := stdlib.GetRemoteHostName(ip)
+    if error != nil {
+        log.Debug("Error while resolving host name %s: %s", addr, error)
+        return ip
+    }
+    // Cache the lookup result
+    hostLookupCache[ip] = hostname
+
+    return
+}
+
 func rollupSlices(active_writers []writers.Writer, force bool) {
     log.Debug("Rolling up slices")
 
@@ -196,52 +254,3 @@ func rollupSlices(active_writers []writers.Writer, force bool) {
     }
 }
 
-func dumper(active_writers []writers.Writer, quit chan bool) {
-    ticker := time.NewTicker(int64(config.GlobalConfig.WriteInterval) * 1000000000)
-    defer ticker.Stop()
-
-    for {
-        if _, ok := <-quit; ok {
-            log.Debug("Shutting down dumper...")
-            return
-        }
-
-        <-ticker.C
-        rollupSlices(active_writers, false)
-    }
-}
-
-func main() {
-    initialize()
-
-    // Quit channel. Should be blocking (non-bufferred), so sender
-    // will wait till receiver will accept message (and shut down)
-    quit := make(chan bool)
-
-    // Messages channel
-    msgchan := make(chan *types.Message, 1000)
-    go msgSlicer(msgchan)
-
-    active_writers := []writers.Writer {
-        &writers.Quartiles {},
-        &writers.YesOrNo   {},
-    }
-
-    go listen(msgchan, quit)
-    go dumper(active_writers, quit)
-
-    for sig := range signal.Incoming {
-        var usig = sig.(signal.UnixSignal)
-        if usig == 1 || usig == 2 || usig == 15 {
-            log.Warn("Received signal: %s", sig)
-            if usig == 2 || usig == 15 {
-                log.Warn("Shutting down everything...")
-                // We have two background processes, so wait for both
-                quit <- true
-                quit <- true
-            }
-            rollupSlices(active_writers, true)
-            if usig == 2 || usig == 15 { return }
-        }
-    }
-}

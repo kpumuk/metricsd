@@ -7,6 +7,7 @@ import (
     "os"
     "os/signal"
     "path"
+    "runtime"
     "time"
     "./config"
     "./logger"
@@ -139,6 +140,9 @@ func initialize() {
     if config.GlobalConfig.LookupDns {
         hostLookupCache = make(map[string] string)
     }
+
+    // Disable memory profiling to prevent panics reporting
+    runtime.MemProfileRate = 0
 }
 
 /***** Go routines ************************************************************/

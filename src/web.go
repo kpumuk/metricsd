@@ -19,7 +19,7 @@ func Start() {
     web.Get("/metric/(.*)", metric)
     web.Get("/graph/(.*)/(.*)/(.*)", graph)
     web.Get("/host/(.*)", host)
-    web.Run("127.0.0.1:6311")
+    web.Run(config.GlobalConfig.Listen)
 }
 
 func summary() string {

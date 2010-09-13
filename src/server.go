@@ -14,6 +14,7 @@ import (
     "./parser"
     "./types"
     "./writers"
+    "./web"
     "gorrdpd/stdlib"
 )
 
@@ -47,6 +48,7 @@ func main() {
     go slicer(msgchan)
     go listen(msgchan, quit)
     go dumper(active_writers, quit)
+    go web.Start()
 
     // Handle signals
     for sig := range signal.Incoming {

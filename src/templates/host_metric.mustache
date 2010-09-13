@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>{{metric}} ({{source}}) :: Metric :: Host</title>
+        <style>
+            a img { border: 0px; }
+            a { text-decoration: none;}
+            ul.graphs { margin: 10px; padding: 0px;}
+            ul.graphs li {
+                list-style-type: none;
+                float: left;
+                background: #eee;
+                padding: 10px;
+                -moz-border-radius: 10px;
+                -webkit-border-radius: 10px;
+                margin-right: 10px;
+                height: 300px;
+                text-align: center;
+             }
+            .back { clear: both; margin-top: 10px; }
+        </style>
+    </head>
+
+    <body>
+        <h1>
+            Metric &raquo;
+            <a href="/metric/{{metric}}">{{metricTitle}}</a> &raquo;
+            {{source}}
+        </h1>
+
+        <ul class="graphs">
+            {{#metrics}}
+                <li>
+                    <a href="/metric/{{Name}}/{{source}}/{{Writer}}">
+                        <img src="/graph/{{source}}/{{metric}}/{{Writer}}?width=400&amp;height=150"/><br/>
+                        {{Title}}
+                    </a>
+                </li>
+            {{/metrics}}
+        </ul>
+
+        <div class="back">
+            <a href="/metric/{{metric}}">
+                Back to Metric &#8617;
+            </a>
+        </div>
+    </body>
+</html>

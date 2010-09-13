@@ -1,0 +1,29 @@
+/usr/bin/rrdtool
+graph
+-
+--imgformat=PNG
+--start={{from}}
+--end=-300
+--title={{title}}{{#source}} ({{source}}){{/source}}
+--rigid
+--base=1000
+--height={{#height}}{{height}}{{/height}}{{^height}}240{{/height}}
+--width={{#width}}{{width}}{{/width}}{{^width}}620{{/width}}
+--alt-autoscale
+--vertical-label=
+--slope-mode
+--font=TITLE:9:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+--font=AXIS:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+--font=LEGEND:8:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+--font=UNIT:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+DEF:a={{rrd_file}}:ok:AVERAGE
+DEF:b={{rrd_file}}:fail:AVERAGE
+CDEF:cdefe=b,-1,*
+AREA:a#00CF00FF:Success
+GPRINT:a:LAST:  Current\:%8.2lf %s
+GPRINT:a:AVERAGE:Average\:%8.2lf %s
+GPRINT:a:MAX:Maximum\:%8.2lf %s\n
+AREA:cdefe#FF897CFF:Failure  
+GPRINT:b:LAST:Current\:%8.2lf %s
+GPRINT:b:AVERAGE:Average\:%8.2lf %s
+GPRINT:b:MAX:Maximum\:%8.2lf %s\n

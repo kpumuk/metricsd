@@ -1,0 +1,40 @@
+/usr/bin/rrdtool
+graph
+-
+--imgformat=PNG
+--start={{from}}
+--end=-300
+--title={{title}}{{#source}} ({{source}}){{/source}}
+--base=1000
+--height={{#height}}{{height}}{{/height}}{{^height}}240{{/height}}
+--width={{#width}}{{width}}{{/width}}{{^width}}620{{/width}}
+--alt-autoscale-max
+--lower-limit=0
+--vertical-label=
+--slope-mode
+--font=TITLE:9:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+--font=AXIS:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+--font=LEGEND:8:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+--font=UNIT:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+DEF:a={{rrd_file}}:q3:AVERAGE
+DEF:b={{rrd_file}}:q2:AVERAGE
+DEF:c={{rrd_file}}:q1:AVERAGE
+DEF:d={{rrd_file}}:lo:AVERAGE
+DEF:e={{rrd_file}}:hi:AVERAGE
+DEF:f={{rrd_file}}:total:AVERAGE
+AREA:a#FF897CFF:Q3 (75%)
+GPRINT:a:LAST:Current\:%8.2lf %s
+GPRINT:a:AVERAGE:Average\:%8.2lf %s
+GPRINT:a:MAX:Maximum\:%8.2lf %s\n
+AREA:b#00CF00FF:Q2 (50%)
+GPRINT:b:LAST:Current\:%8.2lf %s
+GPRINT:b:AVERAGE:Average\:%8.2lf %s
+GPRINT:b:MAX:Maximum\:%8.2lf %s\n
+LINE1:c#96E78AFF:Q1 (25%)
+GPRINT:c:LAST:Current\:%8.2lf %s
+GPRINT:c:AVERAGE:Average\:%8.2lf %s
+GPRINT:c:MAX:Maximum\:%8.2lf %s\n
+GPRINT:d:MIN:Lowest\:%8.2lf %s
+GPRINT:e:AVERAGE:Highest\:%8.2lf %s
+GPRINT:f:AVERAGE:Total\:%8.2lf %s\n
+LINE1:b#157419FF:

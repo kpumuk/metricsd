@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>{{source}} :: Host :: Gorrdpd</title>
+        <style>
+            a img { border: 0px; }
+            a { text-decoration: none;}
+            ul.graphs { margin: 10px; padding: 0px;}
+            ul.graphs li {
+                list-style-type: none;
+                float: left;
+                background: #eee;
+                padding: 10px;
+                -moz-border-radius: 10px;
+                -webkit-border-radius: 10px;
+                margin-right: 10px;
+                height: 600px;
+                text-align: center;
+             }
+            .back { clear: both; margin-top: 10px; }
+        </style>
+    </head>
+
+    <body>
+        <h1>
+            Metric &raquo;
+            <a href="/metric/{{metric}}">{{metricTitle}}</a> &raquo;
+            <a href="/metric/{{metric}}/{{source}}">{{source}}</a> &raquo;
+            {{writerTitle}}
+        </h1>
+
+        <ul class="graphs">
+            <li>
+                <a href="/metric/{{metric}}/{{source}}/{{writer}}">
+                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=450"/><br/>
+                    {{metricTitle}} :: {{writerTitle}} ({{source}})
+                </a>
+            </li>
+        </ul>
+
+        <div class="back">
+            <a href="/metric/{{metric}}/{{source}}">
+                Back to Host &#8617;
+            </a>
+        </div>
+    </body>
+</html>

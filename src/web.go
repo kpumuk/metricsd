@@ -30,7 +30,7 @@ func summary() string {
 
 func metric(metric string) string {
     return mustache.RenderFile(template("metric"), map[string] interface{} {
-        "metric": humanize(metric),
+        "metric": metric,
         "hosts": getSources(metric),
     })
 }
@@ -39,7 +39,6 @@ func host_metric(metric, source string) string {
     return mustache.RenderFile(template("host_metric"), map[string] interface{}{
         "source": source,
         "metric": metric,
-        "metricTitle": humanize(metric),
         "metrics": getRrdFiles("all", metric, ".rrd"),
     })
 }
@@ -55,16 +54,13 @@ func metric_graph(metric, source, writer string) string {
     return mustache.RenderFile(template("metric_graph"), map[string] interface{}{
         "source": source,
         "metric": metric,
-        "metricTitle": humanize(metric),
         "writer": writer,
-        "writerTitle": humanize(writer),
     })
 }
 
 func getRrdFiles(source, metric, suffix string) (files vector.Vector) {
     type elem struct {
         Name  string
-        Title string
         Writer string
     }
 
@@ -78,8 +74,7 @@ func getRrdFiles(source, metric, suffix string) (files vector.Vector) {
             name   := fi.Name[0:split]
             if metric != "" && name != metric { continue }
             writer := fi.Name[split + 1:len(fi.Name) - len(".rrd")]
-            title  := humanizeGraphName(name, writer)
-            files.Push(&elem{name, title, writer})
+            files.Push(&elem{name, writer})
         }
     }
     return
@@ -98,14 +93,6 @@ func getSources(metric string) (sources vector.Vector) {
         sources.Push(&elem{fi.Name, getRrdFiles(fi.Name, metric, "-yesno.rrd")})
     }
     return
-}
-
-func humanizeGraphName(name, writer string) string {
-    return fmt.Sprintf("%s :: %s", humanize(name), humanize(writer))
-}
-
-func humanize(s string) string {
-    return strings.Title(strings.Replace(strings.Replace(s, "_", " ", -1), "-", " — ", -1))
 }
 
 func graph(ctx *web.Context, source, metric, writer string) {
@@ -131,8 +118,9 @@ func graph(ctx *web.Context, source, metric, writer string) {
 
     rrd_file := fmt.Sprintf("%s/%s/%s-%s.rrd", config.GlobalConfig.DataDir, source, metric, writer)
     args := mustache.RenderFile(fmt.Sprintf("templates/writers/%s.mustache", writer), map[string] interface{} {
-        "title":    humanizeGraphName(metric, writer),
         "source":   source,
+        "metric":   metric,
+        "writer":   writer,
         "rrd_file": rrd_file,
         "width":    width,
         "height":   height,

@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
     <head>
-        <title>{{metric}} ({{source}}) :: Metric :: Host</title>
+        <title>{{source}} :: {{metric}} :: Metric :: Gorrdpd</title>
         <style>
             a img { border: 0px; }
             a { text-decoration: none;}
@@ -24,7 +24,7 @@
     <body>
         <h1>
             Metric &raquo;
-            <a href="/metric/{{metric}}">{{metricTitle}}</a> &raquo;
+            <a href="/metric/{{metric}}">{{metric}}</a> &raquo;
             {{source}}
         </h1>
 
@@ -33,7 +33,7 @@
                 <li>
                     <a href="/metric/{{Name}}/{{source}}/{{Writer}}">
                         <img src="/graph/{{source}}/{{metric}}/{{Writer}}?width=400&amp;height=150"/><br/>
-                        {{Title}}
+                        {{Name}} :: {{Writer}}
                     </a>
                 </li>
             {{/metrics}}

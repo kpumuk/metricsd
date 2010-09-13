@@ -23,20 +23,20 @@ func Start() {
 }
 
 func summary() string {
-    return mustache.RenderFile("templates/summary.mustache", map[string] interface{}{
+    return mustache.RenderFile(template("summary"), map[string] interface{}{
         "metrics": getRrdFiles("all", "", "-yesno.rrd"),
     })
 }
 
 func metric(metric string) string {
-    return mustache.RenderFile("templates/metric.mustache", map[string] interface{} {
+    return mustache.RenderFile(template("metric"), map[string] interface{} {
         "metric": humanize(metric),
         "hosts": getSources(metric),
     })
 }
 
 func host_metric(metric, source string) string {
-    return mustache.RenderFile("templates/host_metric.mustache", map[string] interface{}{
+    return mustache.RenderFile(template("host_metric"), map[string] interface{}{
         "source": source,
         "metric": metric,
         "metricTitle": humanize(metric),
@@ -45,14 +45,14 @@ func host_metric(metric, source string) string {
 }
 
 func host(source string) string {
-    return mustache.RenderFile("templates/host.mustache", map[string] interface{}{
+    return mustache.RenderFile(template("host"), map[string] interface{}{
         "source": source,
         "metrics": getRrdFiles(source, "", "-yesno.rrd"),
     })
 }
 
 func metric_graph(metric, source, writer string) string {
-    return mustache.RenderFile("templates/metric_graph.mustache", map[string] interface{}{
+    return mustache.RenderFile(template("metric_graph"), map[string] interface{}{
         "source": source,
         "metric": metric,
         "metricTitle": humanize(metric),
@@ -162,4 +162,8 @@ func graph(ctx *web.Context, source, metric, writer string) {
         return
     }
     return
+}
+
+func template(name string) string {
+    return path.Join(config.GlobalConfig.DataDir, fmt.Sprintf("../templates/%s.mustache", name))
 }

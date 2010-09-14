@@ -38,15 +38,15 @@ func BatchRollup(writer Writer, sets *vector.Vector) {
     args := make([]string, 0, sets.Len())
 
     var from int
-    var prevKey string
+    var prevSource, prevName string
 
     for cur, elem := range *sets {
         set := elem.(*types.SampleSet)
-        if cur == 0 { prevKey = set.Key }
+        if cur == 0 { prevSource = set.Source; prevName = set.Name }
 
         // Next item in the sequence of samples
         pushed := false
-        if prevKey == set.Key {
+        if prevSource == set.Source && prevName == set.Name {
             if item := writer.rollupData(set); item != nil {
                 data.Push(&item)
             }
@@ -54,11 +54,12 @@ func BatchRollup(writer Writer, sets *vector.Vector) {
         }
 
         // Reached a new sequence or the end of samples list
-        if prevKey != set.Key || cur == sets.Len() - 1 {
+        if prevSource != set.Source || prevName != set.Name || cur == sets.Len() - 1 {
             batchRollup(writer, from, sets, data, &args)
 
-            from      = cur
-            prevKey   = set.Key
+            from       = cur
+            prevSource = set.Source
+            prevName   = set.Name
             data.Resize(0, 0)
         }
 

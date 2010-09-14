@@ -99,27 +99,26 @@ func graph(ctx *web.Context, source, metric, writer string) {
     ctx.SetHeader("Content-Type", "image/png", true)
 
     var from int
-    var rra string
+    var rra = "daily"
     if len(ctx.Request.Params["rra"]) > 0 {
         rra = ctx.Request.Params["rra"][0]
-        switch rra {
-        case "hourly":  from = -14400
-        case "daily":   from = -86400
-        case "weekly":  from = -604800
-        case "monthly": from = -2678400
-        case "yearly":  from = -33053184
-        default:        from = -86400
-        }
-    } else {
-        from = -86400
     }
+    switch rra {
+    case "hourly":  from = -14400
+    case "daily":   from = -86400
+    case "weekly":  from = -604800
+    case "monthly": from = -2678400
+    case "yearly":  from = -33053184
+    default:        from = -86400
+    }
+
     var width  string = "620"
     var height string = "240"
     if w, err := ctx.Request.Params["width"];  err { width  = w[0] }
     if h, err := ctx.Request.Params["height"]; err { height = h[0] }
 
     rrd_file := fmt.Sprintf("%s/%s/%s-%s.rrd", config.GlobalConfig.DataDir, source, metric, writer)
-    args := mustache.RenderFile(fmt.Sprintf("templates/writers/%s.mustache", writer), map[string] interface{} {
+    args := mustache.RenderFile(template("writers/" + writer), map[string] interface{} {
         "source":   source,
         "metric":   metric,
         "writer":   writer,

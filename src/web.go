@@ -99,8 +99,10 @@ func graph(ctx *web.Context, source, metric, writer string) {
     ctx.SetHeader("Content-Type", "image/png", true)
 
     var from int
+    var rra string
     if len(ctx.Request.Params["rra"]) > 0 {
-        switch ctx.Request.Params["rra"][0] {
+        rra = ctx.Request.Params["rra"][0]
+        switch rra {
         case "hourly":  from = -14400
         case "daily":   from = -86400
         case "weekly":  from = -604800
@@ -125,6 +127,7 @@ func graph(ctx *web.Context, source, metric, writer string) {
         "width":    width,
         "height":   height,
         "from":     from,
+        "rra":      rra,
     })
     r, w, err := os.Pipe()
     if err != nil {

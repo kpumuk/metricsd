@@ -2,23 +2,7 @@
 <html>
     <head>
         <title>{{writerTitle}} :: {{source}} :: {{metric}} :: Metric :: Gorrdpd</title>
-        <style>
-            a img { border: 0px; }
-            a { text-decoration: none;}
-            ul.graphs { margin: 10px; padding: 0px;}
-            ul.graphs li {
-                list-style-type: none;
-                float: left;
-                background: #eee;
-                padding: 10px;
-                -moz-border-radius: 10px;
-                -webkit-border-radius: 10px;
-                margin-right: 10px;
-                height: 600px;
-                text-align: center;
-             }
-            .back { clear: both; margin-top: 10px; }
-        </style>
+        {{> styles.mustache}}
     </head>
 
     <body>
@@ -29,11 +13,35 @@
             {{writer}}
         </h1>
 
-        <ul class="graphs">
+        <ul class="graphs large-graphs">
             <li>
                 <a href="/metric/{{metric}}/{{source}}/{{writer}}">
-                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=450"/><br/>
-                    {{metric}} :: {{writer}} ({{source}})
+                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=hourly"/><br/>
+                    {{metric}} :: {{writer}} :: hourly ({{source}})
+                </a>
+            </li>
+            <li>
+                <a href="/metric/{{metric}}/{{source}}/{{writer}}">
+                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=daily"/><br/>
+                    {{metric}} :: {{writer}} :: daily ({{source}})
+                </a>
+            </li>
+            <li>
+                <a href="/metric/{{metric}}/{{source}}/{{writer}}">
+                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=weekly"/><br/>
+                    {{metric}} :: {{writer}} :: weekly ({{source}})
+                </a>
+            </li>
+            <li>
+                <a href="/metric/{{metric}}/{{source}}/{{writer}}">
+                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=monthly"/><br/>
+                    {{metric}} :: {{writer}} :: monthly ({{source}})
+                </a>
+            </li>
+            <li>
+                <a href="/metric/{{metric}}/{{source}}/{{writer}}">
+                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=yearly"/><br/>
+                    {{metric}} :: {{writer}} :: yearly ({{source}})
                 </a>
             </li>
         </ul>

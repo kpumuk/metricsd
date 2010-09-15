@@ -9,7 +9,7 @@ build:
 
 install: build
 	mkdir -p $(DESTINATION)/data
-	cp src/gorrdpd script/gorrdpd.sh $(DESTINATION)
+	cp -r src/gorrdpd script/gorrdpd.sh src/templates $(DESTINATION)
 	if test ! -e $(DESTINATION)/gorrdpd.conf; \
 	then cp src/gorrdpd.conf.sample $(DESTINATION)/gorrdpd.conf; \
 	fi

@@ -3,6 +3,31 @@
     <head>
         <title>Summary :: Gorrdpd</title>
         {{> styles.mustache}}
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
+        <script type="text/javascript">
+        jQuery.fn.liveUpdate = function(list) {
+            list = jQuery(list);
+            if (list.length) {
+                var rows = $('li', list),
+                    cache = rows.map(function() { return $(this).text().toLowerCase(); });
+                this.keyup(filter).keyup();
+            }
+            return this;
+
+            function filter() {
+                var term = jQuery.trim(jQuery(this).val().toLowerCase());
+                if (!term) { rows.show(); return; }
+
+                rows.hide();
+                cache.each(function(i) {
+                    if (this.split(term).length - 1 > 0) { jQuery(rows[i]).show(); }
+                });
+            }
+        };
+        jQuery(function() {
+            $('#filter-input').liveUpdate('.graphs').focus();
+        });
+        </script>
     </head>
 
     <body>
@@ -10,16 +35,14 @@
             <h6 id="logo">gorrdpd</h6>
             <h1>Summary</h1>
 
+            <div id="filter">
+                Filter: <input id="filter-input" />
+            </div>
             {{#metrics}}
                 <p class="group"><strong>{{#HasGroup}}Group &raquo; {{Group}}{{/HasGroup}}{{^HasGroup}}Ungrouped{{/HasGroup}}</strong></p>
                 <ul class="graphs short-graphs">
                     {{#Graphs}}
-                        <li>
-                            <a href="/metric/{{Name}}">
-                                <img1 src="/graph/all/{{Name}}/{{Writer}}?width=400&amp;height=150"/>
-                                {{Title}}
-                            </a>
-                        </li>
+                        <li><a href="/metric/{{Name}}">{{Title}}</a></li>
                     {{/Graphs}}
                 </ul>
                 <div class="clear"></div>

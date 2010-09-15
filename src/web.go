@@ -93,6 +93,7 @@ func graph(ctx *web.Context, source, metric, writer string) {
         "height":   height,
         "from":     from,
         "rra":      rra,
+        "interval": config.GlobalConfig.SliceInterval,
     })
     r, w, err := os.Pipe()
     if err != nil {

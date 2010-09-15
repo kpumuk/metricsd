@@ -82,7 +82,34 @@
      }
      ul.graphs li:hover a { color: #eee; }
      ul.large-graphs li { height: auto; }
-     ul.short-graphs li { height: auto; width: 250px; }
+     ul.short-graphs li { height: auto; width: 320px; }
     .back { clear: both; margin-top: 10px; }
-    .clear { clear: both;}
+    .clear { clear: both; }
+    #filter {
+        position: absolute;
+        right: 20px;
+        margin-top: 10px;
+    }
+
+    #filter-input {
+        padding: 5px;
+        font-size: 15px;
+        text-shadow: 0px 1px 0px #fff;
+        outline: none;
+        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#eeeeef), to(#ffffff));
+        background: -moz-linear-gradient(top, #eeeeef, #ffffff);
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        border-radius: 3px;
+        border: 1px solid #717171;
+        -webkit-box-shadow: 1px 1px 0px #efefef;
+        -moz-box-shadow: 1px 1px 0px #efefef;
+        box-shadow:  1px 1px 0px #efefef;
+        width: 150px;
+    }
+    #filter-input:focus {
+        -webkit-box-shadow: 0px 0px 5px #007eff;
+        -moz-box-shadow: 0px 0px 5px #007eff;
+        box-shadow: 0px 0px 5px #007eff;
+    }
 </style>

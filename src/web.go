@@ -6,6 +6,7 @@ import (
     "io/ioutil"
     "os"
     "path"
+    "sort"
     "strings"
     "github.com/hoisie/web.go"
     "github.com/hoisie/mustache.go"
@@ -122,20 +123,37 @@ func graph(ctx *web.Context, source, metric, writer string) {
 /***** Helper functions *******************************************************/
 
 type graphItem struct {
-    Name string
-    Writer string
-    Group  string
-    Title  string
+    Name     string
+    Writer   string
+    Group    string
+    Title    string
+}
+
+func (graph *graphItem) Less(graphToCompare interface{}) bool {
+    g := graphToCompare.(*graphItem)
+    return  graph.Name < g.Name ||
+            (graph.Name == g.Name && graph.Writer < g.Writer)
 }
 
 type graphItemGroup struct {
-    Group  string
-    Graphs *vector.Vector
+    Group    string
+    HasGroup bool
+    Graphs   *vector.Vector
+}
+
+func (group *graphItemGroup) Less(groupToCompare interface{}) bool {
+    g := groupToCompare.(*graphItemGroup)
+    return len(g.Group) == 0 || (len(group.Group) > 0 && group.Group < g.Group)
 }
 
 type graphItemSource struct {
     Source string
     Graphs *vector.Vector
+}
+
+func (source *graphItemSource) Less(sourceToCompare interface{}) bool {
+    s := sourceToCompare.(*graphItemSource)
+    return source.Source == "all" || (s.Source != "all" && source.Source < s.Source)
 }
 
 type Browser struct {}
@@ -154,9 +172,17 @@ func (browser *Browser) ListYesNoGraphsGrouped() (groups *vector.Vector) {
             }
         }
         if !found {
-            groups.Push(&graphItemGroup{file.Group, new(vector.Vector)})
+            group := &graphItemGroup{file.Group, len(file.Group) > 0, new(vector.Vector)}
+            group.Graphs.Push(file)
+            groups.Push(group)
         }
     }
+    sort.Sort(groups)
+    for _, elem := range *groups {
+        group := elem.(*graphItemGroup)
+        sort.Sort(group.Graphs)
+    }
+
     return
 }
 

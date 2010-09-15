@@ -11,7 +11,7 @@
             <h1>Summary</h1>
 
             {{#metrics}}
-                <p class="group"><strong>Group &raquo; {{Group}}</strong></p>
+                <p class="group"><strong>{{#HasGroup}}Group &raquo; {{Group}}{{/HasGroup}}{{^HasGroup}}Ungrouped{{/HasGroup}}</strong></p>
                 <ul class="graphs short-graphs">
                     {{#Graphs}}
                         <li>

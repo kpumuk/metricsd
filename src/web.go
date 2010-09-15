@@ -24,7 +24,7 @@ func Start() {
 
 func summary() string {
     return mustache.RenderFile(template("summary"), map[string] interface{}{
-        "metrics": getRrdFiles("all", "", "-yesno.rrd"),
+        "metrics": groupRrdFiles("all", "", "-yesno.rrd"),
     })
 }
 
@@ -58,23 +58,59 @@ func metric_graph(metric, source, writer string) string {
     })
 }
 
-func getRrdFiles(source, metric, suffix string) (files vector.Vector) {
-    type elem struct {
-        Name  string
-        Writer string
-    }
+type metricItem struct {
+    Name string
+    Writer string
+    Group  string
+    Title  string
+}
 
+func getRrdFiles(source, metric, suffix string) (files vector.Vector) {
     dir, err := ioutil.ReadDir(path.Join(config.GlobalConfig.DataDir, source))
     if err != nil { return }
+
     for _, fi := range dir {
         if fi.IsDirectory() { continue }
 
         if strings.HasSuffix(fi.Name, suffix) {
-            split  := strings.LastIndex(fi.Name, "-")
-            name   := fi.Name[0:split]
+            var name, writer, group, title string
+
+            split := strings.LastIndex(fi.Name, "-")
+            name = fi.Name[0:split]
             if metric != "" && name != metric { continue }
-            writer := fi.Name[split + 1:len(fi.Name) - len(".rrd")]
-            files.Push(&elem{name, writer})
+            writer = fi.Name[split + 1:len(fi.Name) - len(".rrd")]
+
+            split = strings.Index(name, "$")
+            if split >= 0 {
+                group = name[0:split]
+                title = name[split+1:]
+            } else {
+                group = ""
+                title = name
+            }
+            files.Push(&metricItem{name, writer, group, title})
+        }
+    }
+    return
+}
+
+func groupRrdFiles(source, metric, suffix string) (groups *vector.Vector) {
+    type elem struct {
+        Group string
+        Files *vector.Vector
+    }
+
+    groups = new(vector.Vector)
+    for _, file := range getRrdFiles(source, metric, suffix) {
+        found := false
+        for _, group := range *groups {
+            if file.(*metricItem).Group == group.(*elem).Group {
+                group.(*elem).Files.Push(file)
+                found = true
+            }
+        }
+        if !found {
+            groups.Push(&elem{file.(*metricItem).Group, new(vector.Vector)})
         }
     }
     return
@@ -90,7 +126,7 @@ func getSources(metric string) (sources vector.Vector) {
     if err != nil { return }
     for _, fi := range dir {
         if !fi.IsDirectory() { continue }
-        sources.Push(&elem{fi.Name, getRrdFiles(fi.Name, metric, "-yesno.rrd")})
+        sources.Push(&elem{fi.Name, getRrdFiles(fi.Name, metric, ".rrd")})
     }
     return
 }

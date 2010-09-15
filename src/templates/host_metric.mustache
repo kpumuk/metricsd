@@ -6,27 +6,29 @@
     </head>
 
     <body>
-        <h1>
-            Metric &raquo;
-            <a href="/metric/{{metric}}">{{metric}}</a> &raquo;
-            {{source}}
-        </h1>
+        <div id="container">
+            <h6 id="logo">gorrdpd</h6>
+            <h1>
+                Metric &raquo;
+                <a href="/metric/{{metric}}">{{metric}}</a> &raquo;
+                {{source}}
+            </h1>
 
-        <ul class="graphs">
-            {{#metrics}}
-                <li>
-                    <a href="/metric/{{Name}}/{{source}}/{{Writer}}">
-                        <img src="/graph/{{source}}/{{metric}}/{{Writer}}?width=400&amp;height=150"/><br/>
-                        {{Name}} :: {{Writer}}
-                    </a>
-                </li>
-            {{/metrics}}
-        </ul>
+            <ul class="graphs">
+                {{#metrics}}
+                    <li>
+                        <a href="/metric/{{Name}}/{{source}}/{{Writer}}">
+                            <img src="/graph/{{source}}/{{metric}}/{{Writer}}?width=400&amp;height=150"/><br/>
+                        </a>
+                    </li>
+                {{/metrics}}
+            </ul>
 
-        <div class="back">
-            <a href="/metric/{{metric}}">
-                Back to Metric &#8617;
-            </a>
+            <div class="back">
+                <a href="/metric/{{metric}}">
+                    Back to Metric &#8617;
+                </a>
+            </div>
         </div>
     </body>
 </html>

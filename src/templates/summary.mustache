@@ -6,17 +6,24 @@
     </head>
 
     <body>
-        <h1>Summary</h1>
+        <div id="container">
+            <h6 id="logo">gorrdpd</h6>
+            <h1>Summary</h1>
 
-        <ul class="graphs">
             {{#metrics}}
-                <li>
-                    <a href="/metric/{{Name}}">
-                        <img src="/graph/all/{{Name}}/{{Writer}}?width=400&amp;height=150"/><br/>
-                        {{Name}} :: {{Writer}}
-                    </a>
-                </li>
+                <p class="group"><strong>Group &raquo; {{Group}}</strong></p>
+                <ul class="graphs short-graphs">
+                    {{#Files}}
+                        <li>
+                            <a href="/metric/{{Name}}">
+                                <img1 src="/graph/all/{{Name}}/{{Writer}}?width=400&amp;height=150"/>
+                                {{Title}}
+                            </a>
+                        </li>
+                    {{/Files}}
+                </ul>
+                <div class="clear"></div>
             {{/metrics}}
-        </ul>
+        </div>
     </body>
 </html>

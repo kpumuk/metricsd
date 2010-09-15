@@ -6,50 +6,48 @@
     </head>
 
     <body>
-        <h1>
-            Metric &raquo;
-            <a href="/metric/{{metric}}">{{metric}}</a> &raquo;
-            <a href="/metric/{{metric}}/{{source}}">{{source}}</a> &raquo;
-            {{writer}}
-        </h1>
+        <div id="container">
+            <h6 id="logo">gorrdpd</h6>
+            <h1>
+                Metric &raquo;
+                <a href="/metric/{{metric}}">{{metric}}</a> &raquo;
+                <a href="/metric/{{metric}}/{{source}}">{{source}}</a> &raquo;
+                {{writer}}
+            </h1>
 
-        <ul class="graphs large-graphs">
-            <li>
-                <a href="/metric/{{metric}}/{{source}}/{{writer}}">
-                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=hourly"/><br/>
-                    {{metric}} :: {{writer}} :: hourly ({{source}})
-                </a>
-            </li>
-            <li>
-                <a href="/metric/{{metric}}/{{source}}/{{writer}}">
-                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=daily"/><br/>
-                    {{metric}} :: {{writer}} :: daily ({{source}})
-                </a>
-            </li>
-            <li>
-                <a href="/metric/{{metric}}/{{source}}/{{writer}}">
-                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=weekly"/><br/>
-                    {{metric}} :: {{writer}} :: weekly ({{source}})
-                </a>
-            </li>
-            <li>
-                <a href="/metric/{{metric}}/{{source}}/{{writer}}">
-                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=monthly"/><br/>
-                    {{metric}} :: {{writer}} :: monthly ({{source}})
-                </a>
-            </li>
-            <li>
-                <a href="/metric/{{metric}}/{{source}}/{{writer}}">
-                    <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=yearly"/><br/>
-                    {{metric}} :: {{writer}} :: yearly ({{source}})
-                </a>
-            </li>
-        </ul>
+            <ul class="graphs large-graphs">
+                <li>
+                    <a href="/metric/{{metric}}/{{source}}/{{writer}}">
+                        <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=hourly"/><br/>
+                    </a>
+                </li>
+                <li>
+                    <a href="/metric/{{metric}}/{{source}}/{{writer}}">
+                        <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=daily"/><br/>
+                    </a>
+                </li>
+                <li>
+                    <a href="/metric/{{metric}}/{{source}}/{{writer}}">
+                        <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=weekly"/><br/>
+                    </a>
+                </li>
+                <li>
+                    <a href="/metric/{{metric}}/{{source}}/{{writer}}">
+                        <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=monthly"/><br/>
+                    </a>
+                </li>
+                <li>
+                    <a href="/metric/{{metric}}/{{source}}/{{writer}}">
+                        <img src="/graph/{{source}}/{{metric}}/{{writer}}?width=800&amp;height=300&amp;rra=yearly"/><br/>
+                    </a>
+                </li>
+            </ul>
 
-        <div class="back">
-            <a href="/metric/{{metric}}/{{source}}">
-                Back to Host &#8617;
-            </a>
+            <div class="back">
+                <a href="/metric/{{metric}}/{{source}}">
+                    Back to Host &#8617;
+                </a>
+            </div>
         </div>
     </body>
 </html>

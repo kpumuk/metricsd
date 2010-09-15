@@ -13,13 +13,13 @@
             {{#hosts}}
                 <h2 class="group"><a href="/metric/{{metric}}/{{Source}}">Source &raquo; {{Source}}</a></h2>
                 <ul class="graphs">
-                    {{#Files}}
+                    {{#Graphs}}
                         <li>
                             <a href="/metric/{{Name}}/{{Source}}/{{Writer}}">
                                 <img src="/graph/{{Source}}/{{Name}}/{{Writer}}?width=400&amp;height=150"/><br/>
                             </a>
                         </li>
-                    {{/Files}}
+                    {{/Graphs}}
                 </ul>
             {{/hosts}}
 

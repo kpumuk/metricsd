@@ -187,7 +187,7 @@ func (slice *Slice) String() string {
 
 func (slice *Slice) getSampleSet(key, source, name string) *SampleSet {
     if _, found := slice.Sets[key]; !found {
-        slice.Sets[key] = NewSampleSet(slice.Time, key, source, name)
+        slice.Sets[key] = NewSampleSet(slice.Time, source, name)
     }
     return slice.Sets[key]
 }
@@ -204,16 +204,14 @@ func (slice *Slice) getMachineSampleSetKey(message *Message) string {
 
 type SampleSet struct {
     Time   int64
-    Key    string
     Source string
     Name   string
     Values *vector.IntVector
 }
 
-func NewSampleSet(time int64, key, source, name string) *SampleSet {
+func NewSampleSet(time int64, source, name string) *SampleSet {
     return &SampleSet {
         Time:   time,
-        Key:    key,
         Source: source,
         Name:   name,
         Values: new(vector.IntVector),
@@ -225,15 +223,16 @@ func (set *SampleSet) Add(message *Message) {
 }
 
 func (set *SampleSet) Less(setToCompare interface{}) bool {
-    return set.Key < setToCompare.(*SampleSet).Key ||
-        (set.Key == setToCompare.(*SampleSet).Key && set.Time < setToCompare.(*SampleSet).Time)
+    s := setToCompare.(*SampleSet)
+    return  set.Source < s.Source ||
+            (set.Source == s.Source && set.Name < s.Name) ||
+            (set.Source == s.Source && set.Name == s.Name && set.Time < s.Time)
 }
 
 func (set *SampleSet) String() string {
     return fmt.Sprintf(
-        "SampleSet[time=%d, key=%s, size=%d]",
+        "SampleSet[time=%d, size=%d]",
         set.Time,
-        set.Key,
         set.Values.Len(),
     )
 }

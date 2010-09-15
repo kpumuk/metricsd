@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>{{metric}} :: Metric :: Gorrdpd</title>
+        {{> styles.mustache}}
+    </head>
+
+    <body>
+        <div id="container">
+            <h6 id="logo">gorrdpd</h6>
+            <h1>Metric &raquo; {{metric}}</h1>
+
+            {{#hosts}}
+                <h2 class="group"><a href="/metric/{{metric}}/{{Source}}">Source &raquo; {{Source}}</a></h2>
+                <ul class="graphs">
+                    {{#Graphs}}
+                        <li>
+                            <a href="/metric/{{Name}}/{{Source}}/{{Writer}}">
+                                <img src="/graph/{{Source}}/{{Name}}/{{Writer}}?width=400&amp;height=150"/><br/>
+                            </a>
+                        </li>
+                    {{/Graphs}}
+                </ul>
+            {{/hosts}}
+
+            <div class="back">
+                <a href="/">
+                    Back to Summary &#8617;
+                </a>
+            </div>
+        </div>
+    </body>
+</html>

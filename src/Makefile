@@ -9,7 +9,8 @@ PREREQ=\
 	config.$O \
 	types.$O \
 	parser.$O \
-	writers.$O
+	writers.$O \
+	web.$O
 WRITERS=$(wildcard writers/*.go)
 
 include $(GOROOT)/src/Make.cmd

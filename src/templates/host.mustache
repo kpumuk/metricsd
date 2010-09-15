@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>{{source}} :: Host :: Gorrdpd</title>
+        {{> styles.mustache}}
+    </head>
+
+    <body>
+        <h1>Host &raquo; {{source}}</h1>
+
+        <ul class="graphs">
+            {{#metrics}}
+                <li>
+                    <a href="/metric/{{Name}}">
+                        <img src="/graph/{{source}}/{{Name}}/{{Writer}}?width=400&amp;height=150"/><br/>
+                        {{Name}} :: {{Writer}}
+                    </a>
+                </li>
+            {{/metrics}}
+        </ul>
+
+        <div class="back">
+            <a href="/">
+                Back to Summary &#8617;
+            </a>
+        </div>
+    </body>
+</html>

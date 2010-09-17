@@ -82,43 +82,43 @@ func initialize() {
     flag.Parse()
 
     // Load config from a config file
-    config.GlobalConfig.Load(cfg)
+    config.Global.Load(cfg)
     if test { os.Exit(0) }
 
     // Override options with values passed in command line arguments
     // (but only if they have a value different from a default one)
     if listen != config.DEFAULT_LISTEN {
-        config.GlobalConfig.Listen        = listen
+        config.Global.Listen        = listen
     }
     if data != config.DEFAULT_DATA_DIR {
-        config.GlobalConfig.DataDir       = data
+        config.Global.DataDir       = data
     }
     if debug != int(config.DEFAULT_SEVERITY) {
-        config.GlobalConfig.LogLevel      = debug
+        config.Global.LogLevel      = debug
     }
     if slice != config.DEFAULT_SLICE_INTERVAL {
-        config.GlobalConfig.SliceInterval = slice
+        config.Global.SliceInterval = slice
     }
     if write != config.DEFAULT_WRITE_INTERVAL {
-        config.GlobalConfig.WriteInterval = write
+        config.Global.WriteInterval = write
     }
     if batch != config.DEFAULT_BATCH_WRITES {
-        config.GlobalConfig.BatchWrites   = batch
+        config.Global.BatchWrites   = batch
     }
     if lookup != config.DEFAULT_LOOKUP_DNS {
-        config.GlobalConfig.LookupDns     = lookup
+        config.Global.LookupDns     = lookup
     }
 
     // Make data dir path absolute
-    if len(config.GlobalConfig.DataDir) == 0 || config.GlobalConfig.DataDir[0] != '/' {
+    if len(config.Global.DataDir) == 0 || config.Global.DataDir[0] != '/' {
         wd, _ := os.Getwd()
-        config.GlobalConfig.DataDir = path.Join(wd, config.GlobalConfig.DataDir)
+        config.Global.DataDir = path.Join(wd, config.Global.DataDir)
     }
 
     // Create logger
-    config.GlobalConfig.Logger = logger.NewConsoleLogger(logger.Severity(config.GlobalConfig.LogLevel))
-    log = config.GlobalConfig.Logger
-    log.Debug("%s", config.GlobalConfig)
+    config.Global.Logger = logger.NewConsoleLogger(logger.Severity(config.Global.LogLevel))
+    log = config.Global.Logger
+    log.Debug("%s", config.Global)
 
     // Ensure data directory exists
     if _, err := os.Stat(data); err != nil {
@@ -126,18 +126,18 @@ func initialize() {
     }
 
     // Resolve listen address
-    address, error := net.ResolveUDPAddr(config.GlobalConfig.Listen)
+    address, error := net.ResolveUDPAddr(config.Global.Listen)
     if error != nil {
-        log.Fatal("Cannot parse \"%s\": %s", config.GlobalConfig.Listen, error)
+        log.Fatal("Cannot parse \"%s\": %s", config.Global.Listen, error)
         os.Exit(1)
     }
-    config.GlobalConfig.UDPAddress = address
+    config.Global.UDPAddress = address
 
     // Initialize slices structure
-    slices = types.NewSlices(config.GlobalConfig.SliceInterval)
+    slices = types.NewSlices(config.Global.SliceInterval)
 
     // Initialize host lookup cache
-    if config.GlobalConfig.LookupDns {
+    if config.Global.LookupDns {
         hostLookupCache = make(map[string] string)
     }
 
@@ -148,10 +148,10 @@ func initialize() {
 /***** Go routines ************************************************************/
 
 func listen(quit chan bool) {
-    log.Debug("Starting listener on %s", config.GlobalConfig.UDPAddress)
+    log.Debug("Starting listener on %s", config.Global.UDPAddress)
 
     // Listen for requests
-    listener, error := net.ListenUDP("udp", config.GlobalConfig.UDPAddress)
+    listener, error := net.ListenUDP("udp", config.Global.UDPAddress)
     if error != nil {
         log.Fatal("Cannot listen: %s", error)
         os.Exit(1)
@@ -196,7 +196,7 @@ func stats() {
 }
 
 func dumper(active_writers []writers.Writer, quit chan bool) {
-    ticker := time.NewTicker(int64(config.GlobalConfig.WriteInterval) * 1000000000)
+    ticker := time.NewTicker(int64(config.Global.WriteInterval) * 1000000000)
     defer ticker.Stop()
 
     for {
@@ -227,7 +227,7 @@ func process(addr *net.UDPAddr, buf string) {
 
 func lookupHost(addr *net.UDPAddr) (hostname string) {
     ip := addr.IP.String()
-    if !config.GlobalConfig.LookupDns { return ip }
+    if !config.Global.LookupDns { return ip }
 
     // Do we have resolved this address before?
     if _, found := hostLookupCache[ip]; found { return hostLookupCache[ip] }
@@ -247,7 +247,7 @@ func lookupHost(addr *net.UDPAddr) (hostname string) {
 func rollupSlices(active_writers []writers.Writer, force bool) {
     log.Debug("Rolling up slices")
 
-    if config.GlobalConfig.BatchWrites {
+    if config.Global.BatchWrites {
         closedSampleSets := slices.ExtractClosedSampleSets(force)
         for _, writer := range active_writers {
             writers.BatchRollup(writer, closedSampleSets)

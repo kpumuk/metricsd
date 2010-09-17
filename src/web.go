@@ -23,7 +23,7 @@ func Start() {
     web.Get("/metric/(.*)", metric)
     web.Get("/graph/(.*)/(.*)/(.*)", graph)
     web.Get("/host/(.*)", host)
-    web.Run(config.GlobalConfig.Listen)
+    web.Run(config.Global.Listen)
 }
 
 func summary() string {
@@ -84,7 +84,7 @@ func graph(ctx *web.Context, source, metric, writer string) {
     if w, err := ctx.Request.Params["width"];  err { width  = w[0] }
     if h, err := ctx.Request.Params["height"]; err { height = h[0] }
 
-    rrd_file := fmt.Sprintf("%s/%s/%s-%s.rrd", config.GlobalConfig.DataDir, source, metric, writer)
+    rrd_file := fmt.Sprintf("%s/%s/%s-%s.rrd", config.Global.DataDir, source, metric, writer)
     args := mustache.RenderFile(template("writers/" + writer), map[string] interface{} {
         "source":   source,
         "metric":   metric,
@@ -94,15 +94,15 @@ func graph(ctx *web.Context, source, metric, writer string) {
         "height":   height,
         "from":     from,
         "rra":      rra,
-        "interval": config.GlobalConfig.SliceInterval,
+        "interval": config.Global.SliceInterval,
     })
     r, w, err := os.Pipe()
     if err != nil {
-        config.GlobalConfig.Logger.Error("Pipe: %s", err)
+        config.Global.Logger.Error("Pipe: %s", err)
         return
     }
 
-    // config.GlobalConfig.Logger.Debug("started, %s", strings.Split(args, "\n", -1))
+    // config.Global.Logger.Debug("started, %s", strings.Split(args, "\n", -1))
     pid, err := os.ForkExec("/usr/bin/rrdtool", strings.Split(args, "\n", -1), os.Environ(), "", []*os.File{ nil, w, w })
     w.Close()
     io.Copy(ctx, r)
@@ -110,11 +110,11 @@ func graph(ctx *web.Context, source, metric, writer string) {
 
     wait, err := os.Wait(pid, 0)
     if err != nil {
-        config.GlobalConfig.Logger.Error("wait: %s\n", err)
+        config.Global.Logger.Error("wait: %s\n", err)
         return
     }
     if !wait.Exited() || wait.ExitStatus() != 0 {
-        config.GlobalConfig.Logger.Error("date: %v\n", wait)
+        config.Global.Logger.Error("date: %v\n", wait)
         return
     }
     return
@@ -188,7 +188,7 @@ func (browser *Browser) ListCountGraphsGrouped() (groups *vector.Vector) {
 
 func (browser *Browser) ListSources(metric string) (sources *vector.Vector) {
     sources = new(vector.Vector)
-    dir, err := ioutil.ReadDir(path.Join(config.GlobalConfig.DataDir))
+    dir, err := ioutil.ReadDir(path.Join(config.Global.DataDir))
     if err != nil { return }
     for _, fi := range dir {
         if !fi.IsDirectory() { continue }
@@ -201,7 +201,7 @@ func (browser *Browser) ListSources(metric string) (sources *vector.Vector) {
 
 func (*Browser) List(source, metric, suffix string) (files *vector.Vector) {
     files = new(vector.Vector)
-    dir, err := ioutil.ReadDir(path.Join(config.GlobalConfig.DataDir, source))
+    dir, err := ioutil.ReadDir(path.Join(config.Global.DataDir, source))
     if err != nil { return }
 
     for _, fi := range dir {
@@ -230,5 +230,5 @@ func (*Browser) List(source, metric, suffix string) (files *vector.Vector) {
 }
 
 func template(name string) string {
-    return path.Join(config.GlobalConfig.DataDir, fmt.Sprintf("../templates/%s.mustache", name))
+    return path.Join(config.Global.DataDir, fmt.Sprintf("../templates/%s.mustache", name))
 }

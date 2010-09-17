@@ -33,7 +33,7 @@ type Configuration struct {
     Logger        logger.Logger
 }
 
-var GlobalConfig = &Configuration {
+var Global = &Configuration {
     Listen:        DEFAULT_LISTEN,
     DataDir:       DEFAULT_DATA_DIR,
     LogLevel:      int(DEFAULT_SEVERITY),
@@ -52,7 +52,7 @@ func (config *Configuration) Load(path string) {
     defer file.Close()
 
     decoder := json.NewDecoder(file)
-    error = decoder.Decode(GlobalConfig)
+    error = decoder.Decode(config)
     if error != nil {
         fmt.Printf("Failed to parse config file: %s\n", error)
         os.Exit(1)
@@ -62,12 +62,12 @@ func (config *Configuration) Load(path string) {
 func (config *Configuration) String() string {
     return fmt.Sprintf(
         "Configuration:\nListen: \t%s\nData dir:\t%s\nLog level:\t%s\nSlice interval:\t%d\nWrite interval:\t%d\nBatch Writes:\t%t\nLookup DNS:\t%t\n",
-        GlobalConfig.Listen,
-        GlobalConfig.DataDir,
-        logger.Severity(GlobalConfig.LogLevel),
-        GlobalConfig.SliceInterval,
-        GlobalConfig.WriteInterval,
-        GlobalConfig.BatchWrites,
-        GlobalConfig.LookupDns,
+        config.Listen,
+        config.DataDir,
+        logger.Severity(config.LogLevel),
+        config.SliceInterval,
+        config.WriteInterval,
+        config.BatchWrites,
+        config.LookupDns,
     )
 }

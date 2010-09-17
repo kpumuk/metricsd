@@ -1,27 +1,26 @@
 package main
 
 import (
-    "bytes"
-    "crypto/rand"
     "flag"
     "fmt"
+    "io"
     "log"
     "net"
+    "rand"
     "runtime"
+    "strings"
     "time"
 )
 
 func send(address *net.UDPAddr, source, key string, value int) {
-    conn, error := net.DialUDP("udp", nil, address)
+    conn, error := net.DialUDP("udp4", nil, address)
     if error != nil {
         log.Stderrf("Failed to connect to %s", address)
     }
     defer conn.Close()
 
     data := fmt.Sprintf("%s@%s:%d", source, key, value)
-    buf := bytes.NewBufferString(data)
-
-    conn.Write(buf.Bytes())
+    io.Copy(conn, strings.NewReader(data))
 }
 
 func main() {
@@ -46,12 +45,11 @@ func main() {
     }
 
     runtime.GOMAXPROCS(threads + 1)
+    rand.Seed(time.Nanoseconds())
 
     tasks := make(chan int, threads)
     for i := 1; i <= threads; i++ {
         go func(idx int) {
-            var rnd []byte = make([]byte, 2)
-
             ticker := time.NewTicker(delay)
             defer ticker.Stop()
 
@@ -59,8 +57,7 @@ func main() {
             for {
                 <-ticker.C
                 task := <-tasks
-                rand.Read(rnd)
-                send(udp_address, fmt.Sprintf(source, int(rnd[0]) % sourcecnt), fmt.Sprintf(key, int(rnd[1]) % keycnt), task)
+                send(udp_address, fmt.Sprintf(source, rand.Intn(sourcecnt)), fmt.Sprintf(key, rand.Intn(keycnt)), task % step)
             }
         }(i)
     }
@@ -69,4 +66,5 @@ func main() {
         tasks <- sent
         if sent % step == 0 { log.Stdoutf("Processed %d packets of %d", sent, count) }
     }
+    time.Sleep(delay * 2)
 }

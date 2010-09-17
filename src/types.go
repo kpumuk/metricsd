@@ -231,7 +231,9 @@ func (set *SampleSet) Less(setToCompare interface{}) bool {
 
 func (set *SampleSet) String() string {
     return fmt.Sprintf(
-        "SampleSet[time=%d, size=%d]",
+        "SampleSet[source=%s, name=%s, time=%d, size=%d]",
+        set.Source,
+        set.Name,
         set.Time,
         set.Values.Len(),
     )

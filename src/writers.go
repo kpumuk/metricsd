@@ -99,7 +99,7 @@ func batchRollup(writer Writer, from int, sets *vector.Vector, data *vector.Vect
 func updateRrd(writer Writer, set *types.SampleSet, data dataItem, f func() []string) {
     file := getRrdFile(writer, set)
     if _, err := os.Stat(file); err != nil {
-        err := rrd.Create(file, 10, set.Time - 10, data.rrdInfo())
+        err := rrd.Create(file, int64(config.GlobalConfig.SliceInterval), set.Time - int64(config.GlobalConfig.SliceInterval), data.rrdInfo())
         if err != nil {
             config.GlobalConfig.Logger.Debug("Error occurred: %s", err)
             return

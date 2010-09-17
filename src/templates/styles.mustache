@@ -3,6 +3,10 @@
         font: 12pt/1.5em 'Droid Sans', arial, sans-serif;
         background: #151B1F;
     }
+    a {
+        -webkit-transition: all 0.2s ease;
+        transition: all 0.2s ease;
+    }
     h6#logo {
         position: absolute;
         top: 20px;
@@ -19,6 +23,8 @@
         margin: 0px -22px;
         line-height: 1.2em;
     }
+    h1 a { color: #666; border-bottom: 1px dashed #777; }
+    h1 a:hover { color: #222; border-bottom: 1px solid #777; }
     #container {
         background: #FFF;
         margin: 0px auto;
@@ -32,12 +38,12 @@
         min-height: 100px;
     }
     .group { margin-left: -20px; overflow: hidden; font-size: 1em; }
-    .group strong, .group a {
+    .group strong, .group a, .button {
         display: block;
         padding: 5px 35px 5px 20px;
         float: left;
-        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#666666), to(#333333));
-        background: -moz-linear-gradient(top, #666666, #333333);
+        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#666), to(#333));
+        background: -moz-linear-gradient(top, #666, #333);
         border: 1px solid #666;
         -moz-border-radius-bottomright: 30px;
         border-bottom-right-radius: 30px;
@@ -47,7 +53,15 @@
         text-shadow: 0px 2px 3px #666, 0 -1px 0 #000;
         font-weight: normal;
     }
-
+    .button {
+        -moz-border-radius: 20px;
+        border-radius: 20px;
+        padding: 5px 20px;
+    }
+    .group a:hover, .button:hover {
+        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#555), to(#222));
+        background: -moz-linear-gradient(top, #555, #222);
+    }
     a img { border: 0px; }
     a { text-decoration: none;}
     ul.graphs { margin: 10px; padding: 0px; clear: both;}
@@ -57,7 +71,7 @@
 
         background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#eee), to(#ddd));
         background: -moz-linear-gradient(top, #eee, #ddd);
-        -moz-box-shadow: 1px 1px 5px #ccc;
+        -moz-box-shadow: 0px 1px 5px #ccc;
         -webkit-box-shadow: 0px 1px 5px #ccc;
 
         border: 1px solid rgba(0, 0, 0, 0.1);
@@ -78,13 +92,11 @@
          color: #333;
          display: block;
          padding: 10px;
-         -webkit-transition: all 0.2s ease;
-         transition: all 0.2s ease;
      }
      ul.graphs li:hover a { color: #eee; }
      ul.large-graphs li { height: auto; }
      ul.short-graphs li { height: auto; width: 320px; }
-    .back { clear: both; margin-top: 10px; }
+    .back { clear: both; margin-top: 10px; overflow: hidden; padding-left: 10px; }
     .clear { clear: both; }
     #filter {
         position: absolute;

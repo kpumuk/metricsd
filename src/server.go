@@ -25,6 +25,8 @@ var (
     hostLookupCache map[string] string
     /* Slices */
     slices *types.Slices
+    /* Messages received */
+    messagesReceived int
 )
 
 func main() {
@@ -43,6 +45,7 @@ func main() {
 
     // Start background Go routines
     go listen(quit)
+    go stats()
     go dumper(active_writers, quit)
     go web.Start()
 
@@ -180,6 +183,20 @@ func listen(quit chan bool) {
     }
 }
 
+func stats() {
+    ticker := time.NewTicker(1000000000)
+    defer ticker.Stop()
+
+    for {
+        <-ticker.C
+        slices.Add(types.NewMessage("all", "gorrdpd$messages_count", messagesReceived))
+        slices.Add(types.NewMessage("all", "gorrdpd$memory_used",    int(runtime.MemStats.Alloc / 1024)))
+        slices.Add(types.NewMessage("all", "gorrdpd$memory_system",  int(runtime.MemStats.Sys / 1024)))
+
+        messagesReceived = 0
+    }
+}
+
 func dumper(active_writers []writers.Writer, quit chan bool) {
     ticker := time.NewTicker(int64(config.GlobalConfig.WriteInterval) * 1000000000)
     defer ticker.Stop()
@@ -202,6 +219,7 @@ func process(addr *net.UDPAddr, buf string) {
     parser.Parse(buf, func(message *types.Message, err os.Error) {
         if err == nil {
             if message.Source == "" { message.Source = lookupHost(addr) }
+            messagesReceived++
             slices.Add(message)
         } else {
             log.Debug("Error while parsing a message: %s", err)

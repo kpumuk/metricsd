@@ -35,9 +35,6 @@ func main() {
     // will wait till receiver will accept message (and shut down)
     quit := make(chan bool)
 
-    // Messages channel
-    msgchan := make(chan *types.Message, 1000)
-
     // Active writers
     active_writers := []writers.Writer {
         &writers.Quartiles {},
@@ -45,8 +42,7 @@ func main() {
     }
 
     // Start background Go routines
-    go slicer(msgchan)
-    go listen(msgchan, quit)
+    go listen(quit)
     go dumper(active_writers, quit)
     go web.Start()
 
@@ -149,7 +145,7 @@ func initialize() {
 
 /***** Go routines ************************************************************/
 
-func listen(msgchan chan<- *types.Message, quit chan bool) {
+func listen(quit chan bool) {
     log.Debug("Starting listener on %s", config.GlobalConfig.UDPAddress)
 
     // Listen for requests
@@ -180,14 +176,7 @@ func listen(msgchan chan<- *types.Message, quit chan bool) {
             continue
         }
         buf := bytes.NewBuffer(message[0:n])
-        process(addr, buf.String(), msgchan)
-    }
-}
-
-func slicer(msgchan <-chan *types.Message) {
-    for {
-        message := <-msgchan
-        slices.Add(message)
+        process(addr, buf.String())
     }
 }
 
@@ -208,12 +197,12 @@ func dumper(active_writers []writers.Writer, quit chan bool) {
 
 /***** Helper functions *******************************************************/
 
-func process(addr *net.UDPAddr, buf string, msgchan chan<- *types.Message) {
+func process(addr *net.UDPAddr, buf string) {
     log.Debug("Processing message from %s: %s", addr, buf)
     parser.Parse(buf, func(message *types.Message, err os.Error) {
         if err == nil {
             if message.Source == "" { message.Source = lookupHost(addr) }
-            msgchan <- message
+            slices.Add(message)
         } else {
             log.Debug("Error while parsing a message: %s", err)
         }

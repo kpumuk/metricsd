@@ -1,7 +1,6 @@
 package main
 
 import (
-    "bytes"
     "flag"
     "net"
     "os"
@@ -178,8 +177,7 @@ func listen(quit chan bool) {
             }
             continue
         }
-        buf := bytes.NewBuffer(message[0:n])
-        process(addr, buf.String())
+        process(addr, string(message[0:n]))
     }
 }
 

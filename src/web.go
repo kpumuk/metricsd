@@ -3,6 +3,7 @@ package web
 import (
     "container/vector"
     "fmt"
+    "io"
     "io/ioutil"
     "os"
     "path"
@@ -104,10 +105,8 @@ func graph(ctx *web.Context, source, metric, writer string) {
     // config.GlobalConfig.Logger.Debug("started, %s", strings.Split(args, "\n", -1))
     pid, err := os.ForkExec("/usr/bin/rrdtool", strings.Split(args, "\n", -1), os.Environ(), "", []*os.File{ nil, w, w })
     w.Close()
-    bytes, _ := ioutil.ReadAll(r)
+    io.Copy(ctx, r)
     r.Close()
-    ctx.Write(bytes)
-    // config.GlobalConfig.Logger.Debug("done")
 
     wait, err := os.Wait(pid, 0)
     if err != nil {

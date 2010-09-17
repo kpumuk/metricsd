@@ -27,7 +27,7 @@ func Start() {
 
 func summary() string {
     return mustache.RenderFile(template("summary"), map[string] interface{}{
-        "metrics": browser.ListYesNoGraphsGrouped(),
+        "metrics": browser.ListCountGraphsGrouped(),
     })
 }
 
@@ -49,7 +49,7 @@ func host_metric(metric, source string) string {
 func host(source string) string {
     return mustache.RenderFile(template("host"), map[string] interface{}{
         "source": source,
-        "metrics": browser.List(source, "", "-yesno.rrd"),
+        "metrics": browser.List(source, "", "-count.rrd"),
     })
 }
 
@@ -160,9 +160,9 @@ func (source *graphItemSource) Less(sourceToCompare interface{}) bool {
 type Browser struct {}
 var browser = &Browser{}
 
-func (browser *Browser) ListYesNoGraphsGrouped() (groups *vector.Vector) {
+func (browser *Browser) ListCountGraphsGrouped() (groups *vector.Vector) {
     groups = new(vector.Vector)
-    for _, elem := range *browser.List("all", "", "-yesno.rrd") {
+    for _, elem := range *browser.List("all", "", "-count.rrd") {
         file := elem.(*graphItem)
         found := false
         for _, elem := range *groups {

@@ -59,22 +59,6 @@ func (self *Quartiles) rollupData(set *types.SampleSet) (data dataItem) {
     return
 }
 
-// func (self *Quartiles) BatchRollup(sampleSets *vector.Vector) {
-//     var from int = 0
-//     var prevKey string = ""
-//     for i := 0; i < sampleSets.Len(); i++ {
-//         elem := sampleSets.At(i).(*types.SampleSet)
-//         if i == sampleSets.Len() - 1 || (prevKey != elem.Key && prevKey != "") {
-//             data = make([]*QuartilesItem, 0, i - from + 1)
-//             for j := from; j <= i; j++ {
-//                 data[j - from] = rollupData()
-//             }
-//             from = i
-//         }
-//     }
-//
-// }
-
 func (self *QuartilesItem) String() string {
     return fmt.Sprintf(
         "QuartilesItem[time=%d, lo=%d, q1=%d, q2=%d, q3=%d, hi=%d, total=%d]",
@@ -95,7 +79,7 @@ func (*QuartilesItem) rrdInfo() []string {
         "DS:q3:GAUGE:600:0:U",
         "DS:hi:GAUGE:600:0:U",
         "DS:lo:GAUGE:600:0:U",
-        "DS:total:GAUGE:600:0:U",
+        "DS:total:ABSOLUTE:600:0:U",
         "RRA:AVERAGE:0.5:1:25920",      // 72 hours at 1 sample per 10 secs
         "RRA:AVERAGE:0.5:60:4320",      // 1 month at 1 sample per 10 mins
         "RRA:AVERAGE:0.5:2880:5475",    // 5 years at 1 sample per 8 hours

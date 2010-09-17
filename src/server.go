@@ -41,7 +41,7 @@ func main() {
     // Active writers
     active_writers := []writers.Writer {
         &writers.Quartiles {},
-        &writers.YesOrNo   {},
+        &writers.Count     {},
     }
 
     // Start background Go routines

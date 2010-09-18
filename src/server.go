@@ -18,14 +18,13 @@ import (
 )
 
 var (
-    /* Logger instance */
-    log logger.Logger
-    /* DNS names cache */
-    hostLookupCache map[string] string
-    /* Slices */
-    slices *types.Slices
-    /* Messages received */
-    messagesReceived int
+    log                   logger.Logger      /* Logger instance */
+    hostLookupCache       map[string] string /* DNS names cache */
+    slices                *types.Slices      /* Slices */
+    messagesReceived      int64              /* Messages received */
+    totalMessagesReceived int64              /* Total messages received */
+    bytesReceived         int64              /* Bytes sent */
+    totalBytesReceived    int64              /* Total bytes sent */
 )
 
 func main() {
@@ -187,11 +186,13 @@ func stats() {
 
     for {
         <-ticker.C
-        slices.Add(types.NewMessage("all", "gorrdpd$messages_count", messagesReceived))
+        slices.Add(types.NewMessage("all", "gorrdpd$messages_count", int(messagesReceived)))
+        slices.Add(types.NewMessage("all", "gorrdpd$traffic_in",     int(bytesReceived)))
         slices.Add(types.NewMessage("all", "gorrdpd$memory_used",    int(runtime.MemStats.Alloc / 1024)))
         slices.Add(types.NewMessage("all", "gorrdpd$memory_system",  int(runtime.MemStats.Sys / 1024)))
 
         messagesReceived = 0
+        bytesReceived    = 0
     }
 }
 
@@ -214,11 +215,14 @@ func dumper(active_writers []writers.Writer, quit chan bool) {
 
 func process(addr *net.UDPAddr, buf string) {
     log.Debug("Processing message from %s: %s", addr, buf)
+    bytesReceived      += int64(len(buf))
+    totalBytesReceived += int64(len(buf))
     parser.Parse(buf, func(message *types.Message, err os.Error) {
         if err == nil {
             if message.Source == "" { message.Source = lookupHost(addr) }
-            messagesReceived++
             slices.Add(message)
+            messagesReceived++
+            totalMessagesReceived++
         } else {
             log.Debug("Error while parsing a message: %s", err)
         }

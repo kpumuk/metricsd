@@ -31,32 +31,44 @@ import (
 //
 // Return value for this example will be 2.
 func Parse(buf string, f func(message *types.Message, err os.Error)) int {
-    var source, name, svalue string
-    var fields []string
-
     // Number of successfully processed messages
     var count int
     // Process multiple metrics in a single message
     for _, msg := range strings.Split(buf, ";", -1) {
+        var source, name, svalue string
+
         // Check if the message contains a source name
         if idx := strings.Index(msg, "@"); idx >= 0 {
-            source = msg[0:idx]
-            msg = msg[idx+1:]
+            source = msg[:idx]
+            msg    = msg[idx+1:]
+
+            if !validateMetric(source) {
+                f(nil, os.NewError(fmt.Sprintf("Source is invalid: %q (message=%q)", source, buf)))
+                continue
+            }
         }
 
         // Retrieve the metric name
-        fields = strings.Split(msg, ":", -1)
-        if len(fields) < 2 {
-            f(nil, os.NewError(fmt.Sprintf("Message format is not valid: %s", buf)))
-            continue
+        if idx := strings.Index(msg, ":"); idx >= 0 {
+            name   = msg[:idx]
+            svalue = msg[idx+1:]
+
+            if !validateMetric(name) {
+                f(nil, os.NewError(fmt.Sprintf("Metric name is invalid: %q (message=%q)", name, buf)))
+                continue
+            }
+            if len(name) == 0 {
+                f(nil, os.NewError(fmt.Sprintf("Metric name is empty (message=%q)", buf)))
+                continue
+            }
         } else {
-            name = fields[0]
-            svalue = fields[1]
+            f(nil, os.NewError(fmt.Sprintf("Message format is invalid (message=%q)", buf)))
+            continue
         }
 
         // Parse the value
         if value, error := strconv.Atoi(svalue); error != nil {
-            f(nil, os.NewError(fmt.Sprintf("Metric value %s is not valid: %s", svalue, error)))
+            f(nil, os.NewError(fmt.Sprintf("Metric value %q is invalid (message=%q)", svalue, buf)))
             continue
         } else {
             f(types.NewMessage(source, name, value), nil)
@@ -64,4 +76,24 @@ func Parse(buf string, f func(message *types.Message, err os.Error)) int {
         }
     }
     return count
+}
+
+/***** Helper functions *******************************************************/
+
+func validateMetric(name string) bool {
+    for _, rune := range name {
+        if rune < 0x80 {
+            // Digits
+            if '0' <= rune && rune <= '9' { continue }
+            // Letters
+            if 'a' <= rune && rune <= 'z' { continue }
+            switch rune {
+            // Special characters
+            case '_', '-', '$', '.':
+                    continue
+            }
+        }
+        return false
+    }
+    return true
 }

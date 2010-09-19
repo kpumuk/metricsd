@@ -59,6 +59,7 @@ func NewMessage(source string, name string, value int) *Message {
 
 // String converts an instance of message struct to string.
 func (message *Message) String() string {
+    if message == nil { return "Message[nil]" }
     return fmt.Sprintf(
         "Message[source=%s, name=%s, value=%d]",
         message.Source,

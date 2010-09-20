@@ -13,7 +13,7 @@ type messageTest struct {
 
 type testEntry struct {
     message *types.Message
-    err os.Error
+    err     os.Error
 }
 
 var parseTests = []messageTest{
@@ -85,7 +85,7 @@ func TestParse(t *testing.T) {
             if err != nil && expected.err == nil {
                 t.Errorf("Expected no error, got error %q (buf=%q, idx=%d)", err, test.buf, idx)
             }
-            if err != expected.err  {
+            if err != expected.err {
                 t.Errorf("Expected error %q, got error %q (buf=%q, idx=%d)", expected.err, err, test.buf, idx)
             }
             if err == nil {
@@ -114,7 +114,9 @@ func TestParse(t *testing.T) {
 
         expectedCount := 0
         for _, result := range test.results {
-            if (result.err == nil) { expectedCount++ }
+            if result.err == nil {
+                expectedCount++
+            }
         }
         if count != expectedCount {
             t.Errorf("Expected to return %q, got %q (buf=%q)", len(test.results), count, test.buf)

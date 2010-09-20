@@ -6,8 +6,7 @@ import (
     "./types"
 )
 
-type Count struct {
-}
+type Count struct{}
 
 type CountItem struct {
     time int64
@@ -36,7 +35,7 @@ func (self *Count) rollupData(set *types.SampleSet) (data dataItem) {
             fail++
         }
     })
-    data = &CountItem { time: set.Time, ok: ok, fail: fail }
+    data = &CountItem{time: set.Time, ok: ok, fail: fail}
     return
 }
 
@@ -45,12 +44,12 @@ func (self *CountItem) String() string {
 }
 
 func (*CountItem) rrdInfo() []string {
-    return []string {
+    return []string{
         "DS:ok:ABSOLUTE:600:0:U",
         "DS:fail:ABSOLUTE:600:0:U",
-        "RRA:AVERAGE:0.5:1:25920",      // 72 hours at 1 sample per 10 secs
-        "RRA:AVERAGE:0.5:60:4320",      // 1 month at 1 sample per 10 mins
-        "RRA:AVERAGE:0.5:2880:5475",    // 5 years at 1 sample per 8 hours
+        "RRA:AVERAGE:0.5:1:25920",   // 72 hours at 1 sample per 10 secs
+        "RRA:AVERAGE:0.5:60:4320",   // 1 month at 1 sample per 10 mins
+        "RRA:AVERAGE:0.5:2880:5475", // 5 years at 1 sample per 8 hours
     }
 }
 

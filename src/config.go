@@ -20,20 +20,18 @@ const (
 )
 
 type Configuration struct {
-    // Configurable values
-    Listen        string
-    DataDir       string
-    LogLevel      int
-    SliceInterval int
-    WriteInterval int
-    BatchWrites   bool
-    LookupDns     bool
-    // Values for internal usage
-    UDPAddress    *net.UDPAddr
-    Logger        logger.Logger
+    Listen        string        // port and address to listen at
+    DataDir       string        // data directory
+    LogLevel      int           // debug level, the lower - the more verbose (0-5)
+    SliceInterval int           // slice interval in seconds
+    WriteInterval int           // write interval in seconds
+    BatchWrites   bool          // value indicating whether batch RRD updates should be used
+    LookupDns     bool          // value indicating whether reverse DNS lookup should be performed for sources
+    UDPAddress    *net.UDPAddr  // address to listen at (for internal usage)
+    Logger        logger.Logger // logger instance
 }
 
-var Global = &Configuration {
+var Global = &Configuration{
     Listen:        DEFAULT_LISTEN,
     DataDir:       DEFAULT_DATA_DIR,
     LogLevel:      int(DEFAULT_SEVERITY),

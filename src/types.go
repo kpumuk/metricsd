@@ -47,19 +47,21 @@ import (
 
 // A Message contains information about message
 type Message struct {
-    Source string   // message source (IP address, DNS name, or custom string)
-    Name   string   // metric's name
-    Value  int      // metric's value
+    Source string // message source (IP address, DNS name, or custom string)
+    Name   string // metric's name
+    Value  int    // metric's value
 }
 
 // NewMessage creates a new message instance.
 func NewMessage(source string, name string, value int) *Message {
-    return &Message { Source: source, Name: name, Value: value };
+    return &Message{Source: source, Name: name, Value: value}
 }
 
 // String converts an instance of message struct to string.
 func (message *Message) String() string {
-    if message == nil { return "Message[nil]" }
+    if message == nil {
+        return "Message[nil]"
+    }
     return fmt.Sprintf(
         "Message[source=%s, name=%s, value=%d]",
         message.Source,
@@ -72,12 +74,12 @@ func (message *Message) String() string {
 
 type Slices struct {
     Interval int64
-    Slices map[int64] *Slice
+    Slices   map[int64]*Slice
 }
 
 func NewSlices(sliceInterval int) *Slices {
-    return &Slices {
-        Slices:   make(map[int64] *Slice),
+    return &Slices{
+        Slices:   make(map[int64]*Slice),
         Interval: int64(sliceInterval),
     }
 }
@@ -88,7 +90,11 @@ func (slices *Slices) Add(message *Message) {
 
 func (slices *Slices) ExtractClosedSlices(force bool) (closedSlices *vector.Vector) {
     var current int64
-    if force { current = -1 } else { current = slices.getCurrentSliceNumber() }
+    if force {
+        current = -1
+    } else {
+        current = slices.getCurrentSliceNumber()
+    }
 
     // Calculate total number of closed slices (to avoid vector reallocs)
     totalClosedSlices := 0
@@ -110,7 +116,11 @@ func (slices *Slices) ExtractClosedSlices(force bool) (closedSlices *vector.Vect
 // in an array. Processed slices will be removed from the list of active slices.
 func (slices *Slices) ExtractClosedSampleSets(force bool) (closedSampleSets *vector.Vector) {
     var current int64
-    if force { current = -1 } else { current = slices.getCurrentSliceNumber() }
+    if force {
+        current = -1
+    } else {
+        current = slices.getCurrentSliceNumber()
+    }
 
     // Calculate total number of closed sample sets (to avoid vector reallocs)
     totalSampleSets := 0
@@ -121,7 +131,9 @@ func (slices *Slices) ExtractClosedSampleSets(force bool) (closedSampleSets *vec
     // Create an array to store sample sets
     closedSampleSets = new(vector.Vector).Resize(0, totalSampleSets)
     slices.eachClosedSlice(current, func(number int64, slice *Slice) {
-        for _, set := range slice.Sets { closedSampleSets.Push(set) }
+        for _, set := range slice.Sets {
+            closedSampleSets.Push(set)
+        }
         slices.Slices[number] = nil, false
     })
     sort.Sort(closedSampleSets)
@@ -160,11 +172,11 @@ func (slices *Slices) eachClosedSlice(current int64, f func(number int64, slice 
 
 type Slice struct {
     Time int64
-    Sets map[string] *SampleSet
+    Sets map[string]*SampleSet
 }
 
 func NewSlice(time int64) *Slice {
-    return &Slice { Time: time, Sets: make(map[string] *SampleSet) }
+    return &Slice{Time: time, Sets: make(map[string]*SampleSet)}
 }
 
 func (slice *Slice) Less(sliceToCompare interface{}) bool {
@@ -211,7 +223,7 @@ type SampleSet struct {
 }
 
 func NewSampleSet(time int64, source, name string) *SampleSet {
-    return &SampleSet {
+    return &SampleSet{
         Time:   time,
         Source: source,
         Name:   name,
@@ -225,9 +237,9 @@ func (set *SampleSet) Add(message *Message) {
 
 func (set *SampleSet) Less(setToCompare interface{}) bool {
     s := setToCompare.(*SampleSet)
-    return  set.Source < s.Source ||
-            (set.Source == s.Source && set.Name < s.Name) ||
-            (set.Source == s.Source && set.Name == s.Name && set.Time < s.Time)
+    return set.Source < s.Source ||
+        (set.Source == s.Source && set.Name < s.Name) ||
+        (set.Source == s.Source && set.Name == s.Name && set.Time < s.Time)
 }
 
 func (set *SampleSet) String() string {

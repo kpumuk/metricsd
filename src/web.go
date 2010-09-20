@@ -27,35 +27,35 @@ func Start() {
 }
 
 func summary() string {
-    return mustache.RenderFile(template("summary"), map[string] interface{}{
+    return mustache.RenderFile(template("summary"), map[string]interface{}{
         "metrics": browser.ListCountGraphsGrouped(),
     })
 }
 
 func metric(metric string) string {
-    return mustache.RenderFile(template("metric"), map[string] interface{} {
+    return mustache.RenderFile(template("metric"), map[string]interface{}{
         "metric": metric,
-        "hosts": browser.ListSources(metric),
+        "hosts":  browser.ListSources(metric),
     })
 }
 
 func host_metric(metric, source string) string {
-    return mustache.RenderFile(template("host_metric"), map[string] interface{}{
-        "source": source,
-        "metric": metric,
+    return mustache.RenderFile(template("host_metric"), map[string]interface{}{
+        "source":  source,
+        "metric":  metric,
         "metrics": browser.List("all", metric, ".rrd"),
     })
 }
 
 func host(source string) string {
-    return mustache.RenderFile(template("host"), map[string] interface{}{
-        "source": source,
+    return mustache.RenderFile(template("host"), map[string]interface{}{
+        "source":  source,
         "metrics": browser.List(source, "", "-count.rrd"),
     })
 }
 
 func metric_graph(metric, source, writer string) string {
-    return mustache.RenderFile(template("metric_graph"), map[string] interface{}{
+    return mustache.RenderFile(template("metric_graph"), map[string]interface{}{
         "source": source,
         "metric": metric,
         "writer": writer,
@@ -71,21 +71,31 @@ func graph(ctx *web.Context, source, metric, writer string) {
         rra = ctx.Request.Params["rra"][0]
     }
     switch rra {
-    case "hourly":  from = -14400
-    case "daily":   from = -86400
-    case "weekly":  from = -604800
-    case "monthly": from = -2678400
-    case "yearly":  from = -33053184
-    default:        from = -86400
+    case "hourly":
+        from = -14400
+    case "daily":
+        from = -86400
+    case "weekly":
+        from = -604800
+    case "monthly":
+        from = -2678400
+    case "yearly":
+        from = -33053184
+    default:
+        from = -86400
     }
 
-    var width  string = "620"
+    var width string = "620"
     var height string = "240"
-    if w, err := ctx.Request.Params["width"];  err { width  = w[0] }
-    if h, err := ctx.Request.Params["height"]; err { height = h[0] }
+    if w, err := ctx.Request.Params["width"]; err {
+        width = w[0]
+    }
+    if h, err := ctx.Request.Params["height"]; err {
+        height = h[0]
+    }
 
     rrd_file := fmt.Sprintf("%s/%s/%s-%s.rrd", config.Global.DataDir, source, metric, writer)
-    args := mustache.RenderFile(template("writers/" + writer), map[string] interface{} {
+    args := mustache.RenderFile(template("writers/"+writer), map[string]interface{}{
         "source":   source,
         "metric":   metric,
         "writer":   writer,
@@ -103,7 +113,7 @@ func graph(ctx *web.Context, source, metric, writer string) {
     }
 
     // config.Global.Logger.Debug("started, %s", strings.Split(args, "\n", -1))
-    pid, err := os.ForkExec("/usr/bin/rrdtool", strings.Split(args, "\n", -1), os.Environ(), "", []*os.File{ nil, w, w })
+    pid, err := os.ForkExec("/usr/bin/rrdtool", strings.Split(args, "\n", -1), os.Environ(), "", []*os.File{nil, w, w})
     w.Close()
     io.Copy(ctx, r)
     r.Close()
@@ -123,16 +133,16 @@ func graph(ctx *web.Context, source, metric, writer string) {
 /***** Helper functions *******************************************************/
 
 type graphItem struct {
-    Name     string
-    Writer   string
-    Group    string
-    Title    string
+    Name   string
+    Writer string
+    Group  string
+    Title  string
 }
 
 func (graph *graphItem) Less(graphToCompare interface{}) bool {
     g := graphToCompare.(*graphItem)
-    return  graph.Name < g.Name ||
-            (graph.Name == g.Name && graph.Writer < g.Writer)
+    return graph.Name < g.Name ||
+        (graph.Name == g.Name && graph.Writer < g.Writer)
 }
 
 type graphItemGroup struct {
@@ -156,7 +166,8 @@ func (source *graphItemSource) Less(sourceToCompare interface{}) bool {
     return source.Source == "all" || (s.Source != "all" && source.Source < s.Source)
 }
 
-type Browser struct {}
+type Browser struct{}
+
 var browser = &Browser{}
 
 func (browser *Browser) ListCountGraphsGrouped() (groups *vector.Vector) {
@@ -189,9 +200,13 @@ func (browser *Browser) ListCountGraphsGrouped() (groups *vector.Vector) {
 func (browser *Browser) ListSources(metric string) (sources *vector.Vector) {
     sources = new(vector.Vector)
     dir, err := ioutil.ReadDir(path.Join(config.Global.DataDir))
-    if err != nil { return }
+    if err != nil {
+        return
+    }
     for _, fi := range dir {
-        if !fi.IsDirectory() { continue }
+        if !fi.IsDirectory() {
+            continue
+        }
         if graphs := browser.List(fi.Name, metric, ".rrd"); graphs.Len() > 0 {
             sources.Push(&graphItemSource{fi.Name, graphs})
         }
@@ -202,18 +217,24 @@ func (browser *Browser) ListSources(metric string) (sources *vector.Vector) {
 func (*Browser) List(source, metric, suffix string) (files *vector.Vector) {
     files = new(vector.Vector)
     dir, err := ioutil.ReadDir(path.Join(config.Global.DataDir, source))
-    if err != nil { return }
+    if err != nil {
+        return
+    }
 
     for _, fi := range dir {
-        if fi.IsDirectory() { continue }
+        if fi.IsDirectory() {
+            continue
+        }
 
         if strings.HasSuffix(fi.Name, suffix) {
             var name, writer, group, title string
 
             split := strings.LastIndex(fi.Name, "-")
             name = fi.Name[0:split]
-            if len(metric) > 0 && name != metric { continue }
-            writer = fi.Name[split + 1:len(fi.Name) - len(".rrd")]
+            if len(metric) > 0 && name != metric {
+                continue
+            }
+            writer = fi.Name[split+1 : len(fi.Name)-len(".rrd")]
 
             split = strings.Index(name, "$")
             if split >= 0 {

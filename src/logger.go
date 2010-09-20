@@ -6,6 +6,7 @@ import (
 )
 
 type Severity byte
+
 const (
     DEBUG Severity = iota
     INFO
@@ -17,12 +18,18 @@ const (
 
 func (severity Severity) String() string {
     switch severity {
-    case DEBUG:   return "D"
-    case INFO:    return "I"
-    case WARN:    return "W"
-    case ERROR:   return "E"
-    case FATAL:   return "F"
-    case UNKNOWN: return "U"
+    case DEBUG:
+        return "D"
+    case INFO:
+        return "I"
+    case WARN:
+        return "W"
+    case ERROR:
+        return "E"
+    case FATAL:
+        return "F"
+    case UNKNOWN:
+        return "U"
     }
     return "U"
 }
@@ -70,7 +77,9 @@ func (logger *base) Add(severity Severity, format string, v ...interface{}) {
         log.Crash("Tried to use base logger, which has no ability to output. Use descendants instead!")
     }
 
-    if severity < logger.LogLevel { return }
+    if severity < logger.LogLevel {
+        return
+    }
     logger.addFunc(severity, format, v)
 }
 
@@ -81,10 +90,10 @@ type ConsoleLogger struct {
 }
 
 func NewConsoleLogger(logLevel Severity) *ConsoleLogger {
-    logger := &ConsoleLogger { }
-    logger.base = &base {}
+    logger := &ConsoleLogger{}
+    logger.base = &base{}
     logger.base.LogLevel = logLevel
-    logger.base.addFunc  = func(severity Severity, format string, v ...interface{}) {
+    logger.base.addFunc = func(severity Severity, format string, v ...interface{}) {
         format = fmt.Sprintf("%s %s", severity, format)
         log.Stdoutf(format, v)
     }

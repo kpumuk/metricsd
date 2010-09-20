@@ -18,13 +18,13 @@ import (
 )
 
 var (
-    log                   logger.Logger      /* Logger instance */
-    hostLookupCache       map[string] string /* DNS names cache */
-    slices                *types.Slices      /* Slices */
-    messagesReceived      int64              /* Messages received */
-    totalMessagesReceived int64              /* Total messages received */
-    bytesReceived         int64              /* Bytes sent */
-    totalBytesReceived    int64              /* Total bytes sent */
+    log                   logger.Logger     /* Logger instance */
+    hostLookupCache       map[string]string /* DNS names cache */
+    slices                *types.Slices     /* Slices */
+    messagesReceived      int64             /* Messages received */
+    totalMessagesReceived int64             /* Total messages received */
+    bytesReceived         int64             /* Bytes sent */
+    totalBytesReceived    int64             /* Total bytes sent */
 )
 
 func main() {
@@ -36,9 +36,9 @@ func main() {
     quit := make(chan bool)
 
     // Active writers
-    active_writers := []writers.Writer {
-        &writers.Quartiles {},
-        &writers.Count     {},
+    active_writers := []writers.Writer{
+        &writers.Quartiles{},
+        &writers.Count{},
     }
 
     // Start background Go routines
@@ -59,7 +59,9 @@ func main() {
                 quit <- true
             }
             rollupSlices(active_writers, true)
-            if usig == 2 || usig == 15 { return }
+            if usig == 2 || usig == 15 {
+                return
+            }
         }
     }
 }
@@ -69,31 +71,33 @@ func initialize() {
     var slice, write, debug int
     var listen, data, cfg string
     var test, batch, lookup bool
-    flag.StringVar(&cfg,     "config",  config.DEFAULT_CONFIG_PATH,    "Set the path to config file")
-    flag.StringVar(&listen,  "listen",  config.DEFAULT_LISTEN,         "Set the port (+optional address) to listen at")
-    flag.StringVar(&data,    "data",    config.DEFAULT_DATA_DIR,       "Set the data directory")
-    flag.IntVar   (&debug,   "debug",   int(config.DEFAULT_SEVERITY),  "Set the debug level, the lower - the more verbose (0-5)")
-    flag.IntVar   (&slice,   "slice",   config.DEFAULT_SLICE_INTERVAL, "Set the slice interval in seconds")
-    flag.IntVar   (&write,   "write",   config.DEFAULT_WRITE_INTERVAL, "Set the write interval in seconds")
-    flag.BoolVar  (&batch,   "batch",   config.DEFAULT_BATCH_WRITES,   "Set the value indicating whether batch RRD updates should be used")
-    flag.BoolVar  (&lookup,  "lookup",  config.DEFAULT_LOOKUP_DNS,     "Set the value indicating whether reverse DNS lookup should be performed for sources")
-    flag.BoolVar  (&test,    "test",    false,                         "Validate config file and exit")
+    flag.StringVar(&cfg, "config", config.DEFAULT_CONFIG_PATH, "Set the path to config file")
+    flag.StringVar(&listen, "listen", config.DEFAULT_LISTEN, "Set the port (+optional address) to listen at")
+    flag.StringVar(&data, "data", config.DEFAULT_DATA_DIR, "Set the data directory")
+    flag.IntVar(&debug, "debug", int(config.DEFAULT_SEVERITY), "Set the debug level, the lower - the more verbose (0-5)")
+    flag.IntVar(&slice, "slice", config.DEFAULT_SLICE_INTERVAL, "Set the slice interval in seconds")
+    flag.IntVar(&write, "write", config.DEFAULT_WRITE_INTERVAL, "Set the write interval in seconds")
+    flag.BoolVar(&batch, "batch", config.DEFAULT_BATCH_WRITES, "Set the value indicating whether batch RRD updates should be used")
+    flag.BoolVar(&lookup, "lookup", config.DEFAULT_LOOKUP_DNS, "Set the value indicating whether reverse DNS lookup should be performed for sources")
+    flag.BoolVar(&test, "test", false, "Validate config file and exit")
     flag.Parse()
 
     // Load config from a config file
     config.Global.Load(cfg)
-    if test { os.Exit(0) }
+    if test {
+        os.Exit(0)
+    }
 
     // Override options with values passed in command line arguments
     // (but only if they have a value different from a default one)
     if listen != config.DEFAULT_LISTEN {
-        config.Global.Listen        = listen
+        config.Global.Listen = listen
     }
     if data != config.DEFAULT_DATA_DIR {
-        config.Global.DataDir       = data
+        config.Global.DataDir = data
     }
     if debug != int(config.DEFAULT_SEVERITY) {
-        config.Global.LogLevel      = debug
+        config.Global.LogLevel = debug
     }
     if slice != config.DEFAULT_SLICE_INTERVAL {
         config.Global.SliceInterval = slice
@@ -102,10 +106,10 @@ func initialize() {
         config.Global.WriteInterval = write
     }
     if batch != config.DEFAULT_BATCH_WRITES {
-        config.Global.BatchWrites   = batch
+        config.Global.BatchWrites = batch
     }
     if lookup != config.DEFAULT_LOOKUP_DNS {
-        config.Global.LookupDns     = lookup
+        config.Global.LookupDns = lookup
     }
 
     // Make data dir path absolute
@@ -137,7 +141,7 @@ func initialize() {
 
     // Initialize host lookup cache
     if config.Global.LookupDns {
-        hostLookupCache = make(map[string] string)
+        hostLookupCache = make(map[string]string)
     }
 
     // Disable memory profiling to prevent panics reporting
@@ -187,12 +191,12 @@ func stats() {
     for {
         <-ticker.C
         slices.Add(types.NewMessage("all", "gorrdpd$messages_count", int(messagesReceived)))
-        slices.Add(types.NewMessage("all", "gorrdpd$traffic_in",     int(bytesReceived)))
-        slices.Add(types.NewMessage("all", "gorrdpd$memory_used",    int(runtime.MemStats.Alloc / 1024)))
-        slices.Add(types.NewMessage("all", "gorrdpd$memory_system",  int(runtime.MemStats.Sys / 1024)))
+        slices.Add(types.NewMessage("all", "gorrdpd$traffic_in", int(bytesReceived)))
+        slices.Add(types.NewMessage("all", "gorrdpd$memory_used", int(runtime.MemStats.Alloc/1024)))
+        slices.Add(types.NewMessage("all", "gorrdpd$memory_system", int(runtime.MemStats.Sys/1024)))
 
         messagesReceived = 0
-        bytesReceived    = 0
+        bytesReceived = 0
     }
 }
 
@@ -215,11 +219,13 @@ func dumper(active_writers []writers.Writer, quit chan bool) {
 
 func process(addr *net.UDPAddr, buf string) {
     log.Debug("Processing message from %s: %s", addr, buf)
-    bytesReceived      += int64(len(buf))
+    bytesReceived += int64(len(buf))
     totalBytesReceived += int64(len(buf))
     parser.Parse(buf, func(message *types.Message, err os.Error) {
         if err == nil {
-            if message.Source == "" { message.Source = lookupHost(addr) }
+            if message.Source == "" {
+                message.Source = lookupHost(addr)
+            }
             slices.Add(message)
             messagesReceived++
             totalMessagesReceived++
@@ -231,10 +237,14 @@ func process(addr *net.UDPAddr, buf string) {
 
 func lookupHost(addr *net.UDPAddr) (hostname string) {
     ip := addr.IP.String()
-    if !config.Global.LookupDns { return ip }
+    if !config.Global.LookupDns {
+        return ip
+    }
 
     // Do we have resolved this address before?
-    if _, found := hostLookupCache[ip]; found { return hostLookupCache[ip] }
+    if _, found := hostLookupCache[ip]; found {
+        return hostLookupCache[ip]
+    }
 
     // Try to lookup
     hostname, error := stdlib.GetRemoteHostName(ip)
@@ -258,7 +268,7 @@ func rollupSlices(active_writers []writers.Writer, force bool) {
         }
     } else {
         closedSlices := slices.ExtractClosedSlices(force)
-        closedSlices.Do(func(elem interface {}) {
+        closedSlices.Do(func(elem interface{}) {
             slice := elem.(*types.Slice)
             for _, set := range slice.Sets {
                 for _, writer := range active_writers {
@@ -268,4 +278,3 @@ func rollupSlices(active_writers []writers.Writer, force bool) {
         })
     }
 }
-

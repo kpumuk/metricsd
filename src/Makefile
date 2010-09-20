@@ -12,6 +12,7 @@ PREREQ=\
 	writers.$O \
 	web.$O
 WRITERS=$(wildcard writers/*.go)
+GOFMT=gofmt -spaces=true -tabindent=false -tabwidth=4
 
 include $(GOROOT)/src/Make.cmd
 
@@ -31,6 +32,9 @@ godoc:
 clean:
 	rm -rf *.o *.a *.[$(OS)] [$(OS)].out $(CLEANFILES)
 	make -C stdlib clean
+
+format:
+	${GOFMT} -w $(wildcard *.go) ${WRITERS}
 
 test:
 	gotest

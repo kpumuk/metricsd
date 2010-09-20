@@ -40,7 +40,7 @@ func Parse(buf string, f func(message *types.Message, err os.Error)) int {
         // Check if the message contains a source name
         if idx := strings.Index(msg, "@"); idx >= 0 {
             source = msg[:idx]
-            msg    = msg[idx+1:]
+            msg = msg[idx+1:]
 
             if !validateMetric(source) {
                 f(nil, os.NewError(fmt.Sprintf("Source is invalid: %q (message=%q)", source, buf)))
@@ -50,7 +50,7 @@ func Parse(buf string, f func(message *types.Message, err os.Error)) int {
 
         // Retrieve the metric name
         if idx := strings.Index(msg, ":"); idx >= 0 {
-            name   = msg[:idx]
+            name = msg[:idx]
             svalue = msg[idx+1:]
 
             if !validateMetric(name) {
@@ -84,13 +84,17 @@ func validateMetric(name string) bool {
     for _, rune := range name {
         if rune < 0x80 {
             // Digits
-            if '0' <= rune && rune <= '9' { continue }
+            if '0' <= rune && rune <= '9' {
+                continue
+            }
             // Letters
-            if 'a' <= rune && rune <= 'z' { continue }
+            if 'a' <= rune && rune <= 'z' {
+                continue
+            }
             switch rune {
             // Special characters
             case '_', '-', '$', '.':
-                    continue
+                continue
             }
         }
         return false

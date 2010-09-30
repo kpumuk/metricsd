@@ -49,27 +49,27 @@ type base struct {
 }
 
 func (logger *base) Debug(format string, v ...interface{}) {
-    logger.Add(DEBUG, format, v)
+    logger.Add(DEBUG, format, v...)
 }
 
 func (logger *base) Info(format string, v ...interface{}) {
-    logger.Add(INFO, format, v)
+    logger.Add(INFO, format, v...)
 }
 
 func (logger *base) Warn(format string, v ...interface{}) {
-    logger.Add(WARN, format, v)
+    logger.Add(WARN, format, v...)
 }
 
 func (logger *base) Error(format string, v ...interface{}) {
-    logger.Add(ERROR, format, v)
+    logger.Add(ERROR, format, v...)
 }
 
 func (logger *base) Fatal(format string, v ...interface{}) {
-    logger.Add(FATAL, format, v)
+    logger.Add(FATAL, format, v...)
 }
 
 func (logger *base) Unknown(format string, v ...interface{}) {
-    logger.Add(UNKNOWN, format, v)
+    logger.Add(UNKNOWN, format, v...)
 }
 
 func (logger *base) Add(severity Severity, format string, v ...interface{}) {
@@ -80,7 +80,7 @@ func (logger *base) Add(severity Severity, format string, v ...interface{}) {
     if severity < logger.LogLevel {
         return
     }
-    logger.addFunc(severity, format, v)
+    logger.addFunc(severity, format, v...)
 }
 
 /******************************************************************************/
@@ -95,7 +95,7 @@ func NewConsoleLogger(logLevel Severity) *ConsoleLogger {
     logger.base.LogLevel = logLevel
     logger.base.addFunc = func(severity Severity, format string, v ...interface{}) {
         format = fmt.Sprintf("%s %s", severity, format)
-        log.Stdoutf(format, v)
+        log.Stdoutf(format, v...)
     }
     return logger
 }

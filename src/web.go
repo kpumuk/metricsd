@@ -67,8 +67,8 @@ func graph(ctx *web.Context, source, metric, writer string) {
 
     var from int
     var rra = "daily"
-    if len(ctx.Request.Params["rra"]) > 0 {
-        rra = ctx.Request.Params["rra"][0]
+    if r, found := ctx.Request.Params["rra"]; found {
+        rra = r
     }
     switch rra {
     case "hourly":
@@ -87,11 +87,11 @@ func graph(ctx *web.Context, source, metric, writer string) {
 
     var width string = "620"
     var height string = "240"
-    if w, err := ctx.Request.Params["width"]; err {
-        width = w[0]
+    if w, found := ctx.Request.Params["width"]; found {
+        width = w
     }
-    if h, err := ctx.Request.Params["height"]; err {
-        height = h[0]
+    if h, found := ctx.Request.Params["height"]; found {
+        height = h
     }
 
     rrd_file := fmt.Sprintf("%s/%s/%s-%s.rrd", config.Global.DataDir, source, metric, writer)

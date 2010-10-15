@@ -51,7 +51,7 @@ func BatchRollup(writer Writer, sets *vector.Vector) {
         pushed := false
         if prevSource == set.Source && prevName == set.Name {
             if item := writer.rollupData(set); item != nil {
-                data.Push(&item)
+                data.Push(item)
             }
             pushed = true
         }
@@ -69,7 +69,7 @@ func BatchRollup(writer Writer, sets *vector.Vector) {
         // A new sequence beginning
         if !pushed {
             if item := writer.rollupData(set); item != nil {
-                data.Push(&item)
+                data.Push(item)
 
                 // The last item in the samples list
                 if cur == sets.Len()-1 {
@@ -87,15 +87,15 @@ func batchRollup(writer Writer, from int, sets *vector.Vector, data *vector.Vect
     }
 
     // Retrieve the first data item (used to get RRD-related information)
-    firstItem := data.At(0).(*dataItem)
+    firstItem := data.At(0).(dataItem)
     // Retrieve the first sample set (used to generate RRD file name)
     firstSet := sets.At(from).(*types.SampleSet)
     // Update RRD database
-    updateRrd(writer, firstSet, *firstItem, func() (args []string) {
+    updateRrd(writer, firstSet, firstItem, func() (args []string) {
         // Serialize all data items to buffer
         args = (*buf)[0:data.Len()]
         for i, elem := range *data {
-            args[i] = elem.(*dataItem).rrdString()
+            args[i] = elem.(dataItem).rrdString()
         }
         return
     })

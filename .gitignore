@@ -12,3 +12,4 @@ gorrdpd
 udp_generator
 data
 gorrdpd.conf
+gorrd.git

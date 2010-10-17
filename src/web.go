@@ -65,12 +65,14 @@ func metric_graph(metric, source, writer string) string {
 func graph(ctx *web.Context, source, metric, writer string) {
     ctx.SetHeader("Content-Type", "image/png", true)
 
+    params := struct {
+        Rra           string
+        Width, Height int
+    }{"daily", 620, 240}
+    ctx.Request.UnmarshalParams(&params)
+
     var from int
-    var rra = "daily"
-    if r, found := ctx.Request.Params["rra"]; found {
-        rra = r
-    }
-    switch rra {
+    switch params.Rra {
     case "hourly":
         from = -14400
     case "daily":
@@ -83,15 +85,7 @@ func graph(ctx *web.Context, source, metric, writer string) {
         from = -33053184
     default:
         from = -86400
-    }
-
-    var width string = "620"
-    var height string = "240"
-    if w, found := ctx.Request.Params["width"]; found {
-        width = w
-    }
-    if h, found := ctx.Request.Params["height"]; found {
-        height = h
+        params.Rra = "daily"
     }
 
     rrd_file := fmt.Sprintf("%s/%s/%s-%s.rrd", config.Global.DataDir, source, metric, writer)
@@ -100,10 +94,10 @@ func graph(ctx *web.Context, source, metric, writer string) {
         "metric":   metric,
         "writer":   writer,
         "rrd_file": rrd_file,
-        "width":    width,
-        "height":   height,
         "from":     from,
-        "rra":      rra,
+        "width":    params.Width,
+        "height":   params.Height,
+        "rra":      params.Rra,
         "interval": config.Global.SliceInterval,
     })
     r, w, err := os.Pipe()

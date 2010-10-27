@@ -245,5 +245,5 @@ func (*Browser) List(source, metric, suffix string) (files *vector.Vector) {
 }
 
 func template(name string) string {
-    return path.Join(config.Global.RootDir, fmt.Sprintf("../templates/%s.mustache", name))
+    return path.Join(config.Global.RootDir, fmt.Sprintf("templates/%s.mustache", name))
 }

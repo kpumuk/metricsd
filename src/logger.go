@@ -74,7 +74,7 @@ func (logger *base) Unknown(format string, v ...interface{}) {
 
 func (logger *base) Add(severity Severity, format string, v ...interface{}) {
     if logger.addFunc == nil {
-        log.Crash("Tried to use base logger, which has no ability to output. Use descendants instead!")
+        log.Panic("Tried to use base logger, which has no ability to output. Use descendants instead!")
     }
 
     if severity < logger.LogLevel {
@@ -95,7 +95,7 @@ func NewConsoleLogger(logLevel Severity) *ConsoleLogger {
     logger.base.LogLevel = logLevel
     logger.base.addFunc = func(severity Severity, format string, v ...interface{}) {
         format = fmt.Sprintf("%s %s", severity, format)
-        log.Stdoutf(format, v...)
+        log.Printf(format, v...)
     }
     return logger
 }

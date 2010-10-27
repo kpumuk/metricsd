@@ -8,7 +8,7 @@ all: build
 gorrd:
 	if test ! -e $(GORRD_DIR); \
 	then git clone -q git://github.com/kpumuk/gorrd.git $(GORRD_DIR); \
-	else cd $(GORRD_DIR) && git pull -q; \
+	else cd $(GORRD_DIR) && git checkout -q master && git pull -q; \
 	fi
 	make -C $(GORRD_DIR) install
 

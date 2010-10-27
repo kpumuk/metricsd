@@ -12,6 +12,7 @@ const (
     DEFAULT_CONFIG_PATH    = "./gorrdpd.conf"
     DEFAULT_LISTEN         = "0.0.0.0:6311"
     DEFAULT_DATA_DIR       = "./data"
+    DEFAULT_ROOT_DIR       = "."
     DEFAULT_SEVERITY       = logger.INFO
     DEFAULT_SLICE_INTERVAL = 10
     DEFAULT_WRITE_INTERVAL = 60
@@ -22,6 +23,7 @@ const (
 type Configuration struct {
     Listen        string        // port and address to listen at
     DataDir       string        // data directory
+    RootDir       string        // root directory
     LogLevel      int           // debug level, the lower - the more verbose (0-5)
     SliceInterval int           // slice interval in seconds
     WriteInterval int           // write interval in seconds
@@ -34,6 +36,7 @@ type Configuration struct {
 var Global = &Configuration{
     Listen:        DEFAULT_LISTEN,
     DataDir:       DEFAULT_DATA_DIR,
+    RootDir:       DEFAULT_ROOT_DIR,
     LogLevel:      int(DEFAULT_SEVERITY),
     SliceInterval: DEFAULT_SLICE_INTERVAL,
     WriteInterval: DEFAULT_WRITE_INTERVAL,
@@ -59,9 +62,10 @@ func (config *Configuration) Load(path string) {
 
 func (config *Configuration) String() string {
     return fmt.Sprintf(
-        "Configuration:\nListen: \t%s\nData dir:\t%s\nLog level:\t%s\nSlice interval:\t%d\nWrite interval:\t%d\nBatch Writes:\t%t\nLookup DNS:\t%t\n",
+        "Configuration:\nListen: \t%s\nData dir:\t%s\nRoot dir:\t%s\nLog level:\t%s\nSlice interval:\t%d\nWrite interval:\t%d\nBatch Writes:\t%t\nLookup DNS:\t%t\n",
         config.Listen,
         config.DataDir,
+        config.RootDir,
         logger.Severity(config.LogLevel),
         config.SliceInterval,
         config.WriteInterval,

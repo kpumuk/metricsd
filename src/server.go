@@ -69,11 +69,12 @@ func main() {
 func initialize() {
     // Initialize options parser
     var slice, write, debug int
-    var listen, data, cfg string
+    var listen, data, root, cfg string
     var test, batch, lookup bool
     flag.StringVar(&cfg, "config", config.DEFAULT_CONFIG_PATH, "Set the path to config file")
     flag.StringVar(&listen, "listen", config.DEFAULT_LISTEN, "Set the port (+optional address) to listen at")
     flag.StringVar(&data, "data", config.DEFAULT_DATA_DIR, "Set the data directory")
+    flag.StringVar(&data, "root", config.DEFAULT_ROOT_DIR, "Set the root directory")
     flag.IntVar(&debug, "debug", int(config.DEFAULT_SEVERITY), "Set the debug level, the lower - the more verbose (0-5)")
     flag.IntVar(&slice, "slice", config.DEFAULT_SLICE_INTERVAL, "Set the slice interval in seconds")
     flag.IntVar(&write, "write", config.DEFAULT_WRITE_INTERVAL, "Set the write interval in seconds")
@@ -96,6 +97,9 @@ func initialize() {
     if data != config.DEFAULT_DATA_DIR {
         config.Global.DataDir = data
     }
+    if data != config.DEFAULT_ROOT_DIR {
+        config.Global.RootDir = root
+    }
     if debug != int(config.DEFAULT_SEVERITY) {
         config.Global.LogLevel = debug
     }
@@ -116,6 +120,12 @@ func initialize() {
     if len(config.Global.DataDir) == 0 || config.Global.DataDir[0] != '/' {
         wd, _ := os.Getwd()
         config.Global.DataDir = path.Join(wd, config.Global.DataDir)
+    }
+
+    // Make root dir path absolute
+    if len(config.Global.RootDir) == 0 || config.Global.RootDir[0] != '/' {
+        wd, _ := os.Getwd()
+        config.Global.RootDir = path.Join(wd, config.Global.RootDir)
     }
 
     // Create logger

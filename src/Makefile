@@ -12,7 +12,7 @@ PREREQ=\
 	writers.$O \
 	web.$O
 WRITERS=$(wildcard writers/*.go)
-GOFMT=gofmt -spaces=true -tabindent=false -tabwidth=4
+GOFMT=gofmt -spaces=true -tabindent=false -tabwidth=4 -s
 
 include $(GOROOT)/src/Make.cmd
 

@@ -18,54 +18,54 @@ type testEntry struct {
 
 var parseTests = []messageTest{
     // Valid messages with single metric
-    messageTest{"metric:10", []testEntry{
-        testEntry{types.NewMessage("", "metric", 10), nil},
+    {"metric:10", []testEntry{
+        {types.NewMessage("", "metric", 10), nil},
     }},
-    messageTest{"metric:-1", []testEntry{
-        testEntry{types.NewMessage("", "metric", -1), nil},
+    {"metric:-1", []testEntry{
+        {types.NewMessage("", "metric", -1), nil},
     }},
-    messageTest{"group$metric:-1", []testEntry{
-        testEntry{types.NewMessage("", "group$metric", -1), nil},
+    {"group$metric:-1", []testEntry{
+        {types.NewMessage("", "group$metric", -1), nil},
     }},
-    messageTest{"app01@metric:10", []testEntry{
-        testEntry{types.NewMessage("app01", "metric", 10), nil},
+    {"app01@metric:10", []testEntry{
+        {types.NewMessage("app01", "metric", 10), nil},
     }},
 
     // Invalid messages with single metric
-    messageTest{":10", []testEntry{
-        testEntry{nil, os.NewError("Metric name is empty (message=\":10\")")},
+    {":10", []testEntry{
+        {nil, os.NewError("Metric name is empty (message=\":10\")")},
     }},
-    messageTest{"metric!:10", []testEntry{
-        testEntry{nil, os.NewError("Metric name is invalid: \"metric!\" (message=\"metric!:10\")")},
+    {"metric!:10", []testEntry{
+        {nil, os.NewError("Metric name is invalid: \"metric!\" (message=\"metric!:10\")")},
     }},
-    messageTest{"src!@metric:10", []testEntry{
-        testEntry{nil, os.NewError("Source is invalid: \"src!\" (message=\"src!@metric:10\")")},
+    {"src!@metric:10", []testEntry{
+        {nil, os.NewError("Source is invalid: \"src!\" (message=\"src!@metric:10\")")},
     }},
-    messageTest{"app01@metric", []testEntry{
-        testEntry{nil, os.NewError("Message format is invalid (message=\"app01@metric\")")},
+    {"app01@metric", []testEntry{
+        {nil, os.NewError("Message format is invalid (message=\"app01@metric\")")},
     }},
-    messageTest{"app01@metric:hello", []testEntry{
-        testEntry{nil, os.NewError("Metric value \"hello\" is invalid (message=\"app01@metric:hello\")")},
+    {"app01@metric:hello", []testEntry{
+        {nil, os.NewError("Metric value \"hello\" is invalid (message=\"app01@metric:hello\")")},
     }},
 
     // Valid messages with multiple metrics
-    messageTest{"metric1:10;metric2:20", []testEntry{
-        testEntry{types.NewMessage("", "metric1", 10), nil},
-        testEntry{types.NewMessage("", "metric2", 20), nil},
+    {"metric1:10;metric2:20", []testEntry{
+        {types.NewMessage("", "metric1", 10), nil},
+        {types.NewMessage("", "metric2", 20), nil},
     }},
-    messageTest{"app01@metric1:10;metric2:20", []testEntry{
-        testEntry{types.NewMessage("app01", "metric1", 10), nil},
-        testEntry{types.NewMessage("", "metric2", 20), nil},
+    {"app01@metric1:10;metric2:20", []testEntry{
+        {types.NewMessage("app01", "metric1", 10), nil},
+        {types.NewMessage("", "metric2", 20), nil},
     }},
-    messageTest{"app01@metric1:10;app02@metric2:20", []testEntry{
-        testEntry{types.NewMessage("app01", "metric1", 10), nil},
-        testEntry{types.NewMessage("app02", "metric2", 20), nil},
+    {"app01@metric1:10;app02@metric2:20", []testEntry{
+        {types.NewMessage("app01", "metric1", 10), nil},
+        {types.NewMessage("app02", "metric2", 20), nil},
     }},
 
     // Semi-valid messages (multiple metrics, some are invalid)
-    messageTest{"metric1:10;metric2:", []testEntry{
-        testEntry{types.NewMessage("", "metric1", 10), nil},
-        testEntry{nil, os.NewError("Metric value \"\" is invalid (message=\"metric1:10;metric2:\")")},
+    {"metric1:10;metric2:", []testEntry{
+        {types.NewMessage("", "metric1", 10), nil},
+        {nil, os.NewError("Metric value \"\" is invalid (message=\"metric1:10;metric2:\")")},
     }},
 }
 

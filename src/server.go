@@ -2,6 +2,7 @@ package main
 
 import (
     "flag"
+    "exec"
     "net"
     "os"
     "os/signal"
@@ -116,16 +117,18 @@ func initialize() {
         config.Global.LookupDns = lookup
     }
 
+    // Get root directory
+    currentFile, _ := exec.LookPath(os.Args[0])
+    currentRoot, _ := path.Split(currentFile)
+
     // Make data dir path absolute
     if len(config.Global.DataDir) == 0 || config.Global.DataDir[0] != '/' {
-        wd, _ := os.Getwd()
-        config.Global.DataDir = path.Join(wd, config.Global.DataDir)
+        config.Global.DataDir = path.Join(currentRoot, config.Global.DataDir)
     }
 
     // Make root dir path absolute
     if len(config.Global.RootDir) == 0 || config.Global.RootDir[0] != '/' {
-        wd, _ := os.Getwd()
-        config.Global.RootDir = path.Join(wd, config.Global.RootDir)
+        config.Global.RootDir = path.Join(currentRoot, config.Global.RootDir)
     }
 
     // Create logger

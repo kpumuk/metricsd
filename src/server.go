@@ -84,6 +84,14 @@ func initialize() {
     flag.BoolVar(&test, "test", false, "Validate config file and exit")
     flag.Parse()
 
+    // Get root directory
+    currentFile, _ := exec.LookPath(os.Args[0])
+    currentRoot, _ := path.Split(currentFile)
+
+    // Make config file path absolute
+    if cfg[0] != '/' {
+        cfg = path.Join(currentRoot, cfg)
+    }
     // Load config from a config file
     config.Global.Load(cfg)
     if test {
@@ -116,10 +124,6 @@ func initialize() {
     if lookup != config.DEFAULT_LOOKUP_DNS {
         config.Global.LookupDns = lookup
     }
-
-    // Get root directory
-    currentFile, _ := exec.LookPath(os.Args[0])
-    currentRoot, _ := path.Split(currentFile)
 
     // Make data dir path absolute
     if len(config.Global.DataDir) == 0 || config.Global.DataDir[0] != '/' {

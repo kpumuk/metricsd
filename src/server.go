@@ -85,12 +85,12 @@ func initialize() {
     flag.Parse()
 
     // Get root directory
-    currentFile, _ := exec.LookPath(os.Args[0])
-    currentRoot, _ := path.Split(currentFile)
+    binaryFile, _ := exec.LookPath(os.Args[0])
+    binaryRoot, _ := path.Split(binaryFile)
 
     // Make config file path absolute
     if cfg[0] != '/' {
-        cfg = path.Join(currentRoot, cfg)
+        cfg = path.Join(binaryRoot, cfg)
     }
     // Load config from a config file
     config.Global.Load(cfg)
@@ -127,12 +127,12 @@ func initialize() {
 
     // Make data dir path absolute
     if len(config.Global.DataDir) == 0 || config.Global.DataDir[0] != '/' {
-        config.Global.DataDir = path.Join(currentRoot, config.Global.DataDir)
+        config.Global.DataDir = path.Join(binaryRoot, config.Global.DataDir)
     }
 
     // Make root dir path absolute
     if len(config.Global.RootDir) == 0 || config.Global.RootDir[0] != '/' {
-        config.Global.RootDir = path.Join(currentRoot, config.Global.RootDir)
+        config.Global.RootDir = path.Join(binaryRoot, config.Global.RootDir)
     }
 
     // Create logger

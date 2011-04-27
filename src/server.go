@@ -185,19 +185,20 @@ func listen(quit chan bool) {
 
     message := make([]byte, 256)
     for {
-        if _, ok := <-quit; ok {
+        select {
+        case <-quit:
             log.Debug("Shutting down listener...")
             return
-        }
-
-        n, addr, error := listener.ReadFromUDP(message)
-        if error != nil {
-            if addr != nil {
-                log.Debug("Cannot read UDP from %s: %s\n", addr, error)
+        default:
+            n, addr, error := listener.ReadFromUDP(message)
+            if error != nil {
+                if addr != nil {
+                    log.Debug("Cannot read UDP from %s: %s\n", addr, error)
+                }
+                continue
             }
-            continue
+            process(addr, string(message[0:n]))
         }
-        process(addr, string(message[0:n]))
     }
 }
 
@@ -222,13 +223,13 @@ func dumper(active_writers []writers.Writer, quit chan bool) {
     defer ticker.Stop()
 
     for {
-        if _, ok := <-quit; ok {
+        select {
+        case <-quit:
             log.Debug("Shutting down dumper...")
             return
+        case <-ticker.C:
+            rollupSlices(active_writers, false)
         }
-
-        <-ticker.C
-        rollupSlices(active_writers, false)
     }
 }
 

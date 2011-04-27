@@ -107,12 +107,13 @@ func graph(ctx *web.Context, source, metric, writer string) {
     }
 
     // config.Global.Logger.Debug("started, %s", strings.Split(args, "\n", -1))
-    pid, err := os.ForkExec("/usr/bin/rrdtool", strings.Split(args, "\n", -1), os.Environ(), "", []*os.File{nil, w, w})
+    process, err := os.StartProcess("/usr/bin/rrdtool", strings.Split(args, "\n", -1), os.Environ(), "", []*os.File{nil, w, w})
+    defer process.Release()
     w.Close()
     io.Copy(ctx, r)
     r.Close()
 
-    wait, err := os.Wait(pid, 0)
+    wait, err := process.Wait(0)
     if err != nil {
         config.Global.Logger.Error("wait: %s\n", err)
         return

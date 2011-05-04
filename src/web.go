@@ -107,7 +107,8 @@ func graph(ctx *web.Context, source, metric, writer string) {
     }
 
     // config.Global.Logger.Debug("started, %s", strings.Split(args, "\n", -1))
-    process, err := os.StartProcess("/usr/bin/rrdtool", strings.Split(args, "\n", -1), os.Environ(), "", []*os.File{nil, w, w})
+    attr := &os.ProcAttr{"", os.Environ(), []*os.File{nil, w, w}}
+    process, err := os.StartProcess("/usr/bin/rrdtool", strings.Split(args, "\n", -1), attr)
     defer process.Release()
     w.Close()
     io.Copy(ctx, r)

@@ -146,7 +146,7 @@ func initialize() {
     }
 
     // Resolve listen address
-    address, error := net.ResolveUDPAddr(config.Global.Listen)
+    address, error := net.ResolveUDPAddr("udp", config.Global.Listen)
     if error != nil {
         log.Fatal("Cannot parse \"%s\": %s", config.Global.Listen, error)
         os.Exit(1)

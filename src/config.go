@@ -45,7 +45,7 @@ var Global = &Configuration{
 }
 
 func (config *Configuration) Load(path string) {
-    file, error := os.Open(path, os.O_RDONLY, 0)
+    file, error := os.Open(path)
     if error != nil {
         fmt.Printf("Config file does not exist: %s\n", path)
         return

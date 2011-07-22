@@ -286,13 +286,12 @@ func rollupSlices(active_writers []writers.Writer, force bool) {
         }
     } else {
         closedSlices := slices.ExtractClosedSlices(force)
-        closedSlices.Do(func(elem interface{}) {
-            slice := elem.(*types.Slice)
+        for _, slice := range closedSlices {
             for _, set := range slice.Sets {
                 for _, writer := range active_writers {
                     writers.Rollup(writer, set)
                 }
             }
-        })
+        }
     }
 }

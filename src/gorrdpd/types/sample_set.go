@@ -24,11 +24,10 @@ func (set *SampleSet) Add(message *Message) {
     set.Values = append(set.Values, message.Value)
 }
 
-func (set *SampleSet) Less(setToCompare interface{}) bool {
-    s := setToCompare.(*SampleSet)
-    return set.Source < s.Source ||
-        (set.Source == s.Source && set.Name < s.Name) ||
-        (set.Source == s.Source && set.Name == s.Name && set.Time < s.Time)
+func (set *SampleSet) Less(setToCompare *SampleSet) bool {
+    return set.Source < setToCompare.Source ||
+        (set.Source == setToCompare.Source && set.Name < setToCompare.Name) ||
+        (set.Source == setToCompare.Source && set.Name == setToCompare.Name && set.Time < setToCompare.Time)
 }
 
 func (set *SampleSet) String() string {

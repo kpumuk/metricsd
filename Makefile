@@ -5,8 +5,8 @@ endif
 all: build
 
 build:
-	GOPATH=$(CURDIR) goinstall gorrdpd
-	GOPATH=$(CURDIR) goinstall benchmark
+	GOPATH=$(CURDIR) goinstall -clean gorrdpd
+	GOPATH=$(CURDIR) goinstall -clean benchmark
 
 install: build rrdtool
 	mkdir -p $(DESTINATION)/data

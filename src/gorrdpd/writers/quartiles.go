@@ -4,7 +4,7 @@ import (
     "container/vector"
     "fmt"
     "sort"
-    "./types"
+    "gorrdpd/types"
 )
 
 type Quartiles struct{}

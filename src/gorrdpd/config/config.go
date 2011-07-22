@@ -5,7 +5,7 @@ import (
     "json"
     "net"
     "os"
-    "./logger"
+	"gorrdpd/logger"
 )
 
 const (

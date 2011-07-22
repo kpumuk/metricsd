@@ -3,7 +3,7 @@ package writers
 import (
     "container/vector"
     "fmt"
-    "./types"
+    "gorrdpd/types"
 )
 
 type Count struct{}

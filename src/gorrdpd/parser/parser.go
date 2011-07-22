@@ -12,7 +12,7 @@ import (
     "os"
     "strconv"
     "strings"
-    "./types"
+    "gorrdpd/types"
 )
 
 // Parse parses source buffer and invokes the given function, passing either parsed

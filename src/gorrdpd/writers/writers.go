@@ -4,9 +4,9 @@ import (
     "container/vector"
     "fmt"
     "os"
-    "rrd"
-    "./config"
-    "./types"
+	"gorrdpd/config"
+    "gorrdpd/types"
+    "github.com/kpumuk/gorrd"
 )
 
 

@@ -9,13 +9,13 @@ import (
     "path"
     "runtime"
     "time"
-    "./config"
-    "./logger"
-    "./parser"
-    "./types"
-    "./writers"
-    "./web"
+    "gorrdpd/config"
+    "gorrdpd/logger"
+    "gorrdpd/parser"
+    "gorrdpd/writers"
     "gorrdpd/stdlib"
+    "gorrdpd/types"
+    "gorrdpd/web"
 )
 
 var (
@@ -50,17 +50,17 @@ func main() {
 
     // Handle signals
     for sig := range signal.Incoming {
-        var usig = sig.(signal.UnixSignal)
-        if usig == 1 || usig == 2 || usig == 15 {
+        var usig = sig.(os.UnixSignal)
+        if usig == os.SIGHUP || usig == os.SIGINT || usig == os.SIGTERM {
             log.Warn("Received signal: %s", sig)
-            if usig == 2 || usig == 15 {
+            if usig == os.SIGINT || usig == os.SIGTERM {
                 log.Warn("Shutting down everything...")
                 // We have two background processes, so wait for both
                 quit <- true
                 quit <- true
             }
             rollupSlices(active_writers, true)
-            if usig == 2 || usig == 15 {
+            if usig == os.SIGINT || usig == os.SIGTERM {
                 return
             }
         }

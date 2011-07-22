@@ -9,9 +9,9 @@ import (
     "path"
     "sort"
     "strings"
+	"gorrdpd/config"
     "github.com/hoisie/web.go"
     "github.com/hoisie/mustache.go"
-    "./config"
 )
 
 /***** Web routines ***********************************************************/

@@ -1,30 +1,12 @@
 ifeq ($(DESTINATION),)
 DESTINATION:=/usr/local/gorrdpd
 endif
-GORRD_DIR=gorrd.git
 
 all: build
 
-gorrd:
-	if test ! -e $(GORRD_DIR); \
-	then git clone -q git://github.com/kpumuk/gorrd.git $(GORRD_DIR); \
-	else cd $(GORRD_DIR) && git checkout -q master && git pull -q; \
-	fi
-	make -C $(GORRD_DIR) install
-
-web.go:
-	goinstall github.com/hoisie/web.go
-
-mustache.go:
-	goinstall github.com/hoisie/mustache.go
-
-rrdtool:
-	if test ! -e /usr/bin/rrdtool; \
-	then echo "Please install rrdtool to /usr/bin/rrdtool"; exit; \
-	fi
-
-build: gorrd web.go mustache.go
-	make -C src gorrdpd
+build:
+	GOPATH=$(CURDIR) goinstall gorrdpd
+	GOPATH=$(CURDIR) goinstall benchmark
 
 install: build rrdtool
 	mkdir -p $(DESTINATION)/data
@@ -34,9 +16,9 @@ install: build rrdtool
 	if test -e $(DESTINATION)/gorrdpd; \
 	then mv $(DESTINATION)/gorrdpd $(DESTINATION)/gorrdpd.old; \
 	fi
-	cp -r src/gorrdpd script/gorrdpd.sh src/templates $(DESTINATION)
+	cp -r bin/gorrdpd bin/gorrdpd.sh templates $(DESTINATION)
 	if test ! -e $(DESTINATION)/gorrdpd.conf; \
-	then cp src/gorrdpd.conf.sample $(DESTINATION)/gorrdpd.conf; \
+	then cp gorrdpd.conf.sample $(DESTINATION)/gorrdpd.conf; \
 	fi
 
 clean:

@@ -1,0 +1,9 @@
+[submodule "src/github.com/hoisie/mustache.go"]
+	path = src/github.com/hoisie/mustache.go
+	url = git://github.com/hoisie/mustache.go
+[submodule "src/github.com/hoisie/web.go"]
+	path = src/github.com/hoisie/web.go
+	url = git://github.com/hoisie/web.go
+[submodule "src/github.com/kpumuk/gorrd"]
+	path = src/github.com/kpumuk/gorrd
+	url = git://github.com/kpumuk/gorrd

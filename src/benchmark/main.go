@@ -15,7 +15,7 @@ import (
 func send(address *net.UDPAddr, source, key string, value int) {
     conn, error := net.DialUDP("udp4", nil, address)
     if error != nil {
-        log.Stderrf("Failed to connect to %s", address)
+        log.Fatalf("Failed to connect to %s", address)
     }
     defer conn.Close()
 
@@ -39,9 +39,9 @@ func main() {
     flag.IntVar   (&threads,   "threads",   10,           "Set the number of active threads")
     flag.Parse()
 
-    udp_address, error := net.ResolveUDPAddr(address)
+    udp_address, error := net.ResolveUDPAddr("udp", address)
     if error != nil {
-        log.Exitf("Cannot parse \"%s\": %s", address, error)
+        log.Fatalf("Cannot parse \"%s\": %s", address, error)
     }
 
     runtime.GOMAXPROCS(threads + 1)
@@ -53,7 +53,7 @@ func main() {
             ticker := time.NewTicker(delay)
             defer ticker.Stop()
 
-            log.Stdoutf("Started thread #%d", idx)
+            log.Printf("Started thread #%d", idx)
             for {
                 <-ticker.C
                 task := <-tasks
@@ -64,7 +64,7 @@ func main() {
 
     for sent := 1; sent <= count; sent++ {
         tasks <- sent
-        if sent % step == 0 { log.Stdoutf("Processed %d packets of %d", sent, count) }
+        if sent % step == 0 { log.Printf("Processed %d packets of %d", sent, count) }
     }
     time.Sleep(delay * 2)
 }

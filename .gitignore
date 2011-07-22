@@ -11,3 +11,5 @@ bin/benchmark
 data
 gorrdpd.conf
 pkg
+src/benchmark/benchmark
+src/gorrdpd/gorrdpd

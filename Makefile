@@ -21,6 +21,11 @@ install: build rrdtool
 	then cp gorrdpd.conf.sample $(DESTINATION)/gorrdpd.conf; \
 	fi
 
+rrdtool:
+	if test ! -e /usr/bin/rrdtool; \
+	then echo "Please install rrdtool to /usr/bin/rrdtool"; exit; \
+	fi
+
 clean:
 	if test -e $(GORRD_DIR); \
 	then make -C $(GORRD_DIR) clean; \

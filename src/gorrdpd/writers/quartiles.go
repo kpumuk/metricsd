@@ -1,7 +1,6 @@
 package writers
 
 import (
-    "container/vector"
     "fmt"
     "sort"
     "gorrdpd/types"
@@ -22,27 +21,31 @@ func (self *Quartiles) Rollup(set *types.SampleSet) {
     Rollup(self, set)
 }
 
-func (self *Quartiles) BatchRollup(sets *vector.Vector) {
+func (self *Quartiles) BatchRollup(sets types.SampleSetsList) {
     BatchRollup(self, sets)
 }
 
 func (self *Quartiles) rollupData(set *types.SampleSet) (data dataItem) {
-    if set.Values.Len() < 2 {
+    if len(set.Values) < 2 {
         return
     }
     sort.Sort(set.Values)
-    number := set.Values.Len()
-    lo := set.Values.At(0)
-    hi := set.Values.At(number - 1)
+    number := len(set.Values)
+    lo := set.Values[0]
+    hi := set.Values[number - 1]
     lo_c := number / 2
     hi_c := number - lo_c
     if lo_c > 0 && hi_c > 0 {
-        lo_samples := set.Values.Slice(0, lo_c)
-        hi_samples := set.Values.Slice(lo_c, lo_c+hi_c)
+        lo_samples := set.Values[0:lo_c]
+        hi_samples := set.Values[lo_c:lo_c+hi_c]
         lo_sum := 0
         hi_sum := 0
-        lo_samples.Do(func(elem int) { lo_sum += elem })
-        hi_samples.Do(func(elem int) { hi_sum += elem })
+        for _, elem := range lo_samples {
+	    	lo_sum += elem
+		}
+        for _, elem := range hi_samples {
+			hi_sum += elem
+		}
         q1 := lo_sum / lo_c
         q2 := (lo_sum + hi_sum) / (lo_c + hi_c)
         q3 := hi_sum / hi_c

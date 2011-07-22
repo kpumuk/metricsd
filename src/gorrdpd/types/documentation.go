@@ -30,9 +30,9 @@
 //     slices.Add(msg)
 // 2. Retrieving "closed" slices (or sample sets) to process them and store in some DB:
 //     // retrieve closed slices
-//     var closedSlices *vector.Vector = slices.ExtractClosedSlices(false)
-//     // or retrieve all sample set for all closed slices in a single list
-//     var closedSampleSets *vector.Vector = slices.ExtractClosedSampleSets(false)
+//     var closedSlices SlicesList = slices.ExtractClosedSlices(false)
+//     // or retrieve all sample sets for all closed slices in a single list
+//     var closedSampleSets SampleSetsList = slices.ExtractClosedSampleSets(false)
 //
 
 package types

@@ -2,14 +2,13 @@ package types
 
 import (
     "fmt"
-    "container/vector"
 )
 
 type SampleSet struct {
     Time   int64
     Source string
     Name   string
-    Values *vector.IntVector
+    Values IntValuesList
 }
 
 func NewSampleSet(time int64, source, name string) *SampleSet {
@@ -17,12 +16,12 @@ func NewSampleSet(time int64, source, name string) *SampleSet {
         Time:   time,
         Source: source,
         Name:   name,
-        Values: new(vector.IntVector),
+        Values: make([]int, 0, 8),
     }
 }
 
 func (set *SampleSet) Add(message *Message) {
-    set.Values.Push(message.Value)
+    set.Values = append(set.Values, message.Value)
 }
 
 func (set *SampleSet) Less(setToCompare interface{}) bool {
@@ -38,6 +37,6 @@ func (set *SampleSet) String() string {
         set.Source,
         set.Name,
         set.Time,
-        set.Values.Len(),
+        len(set.Values),
     )
 }

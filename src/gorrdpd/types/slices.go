@@ -1,7 +1,6 @@
 package types
 
 import (
-    "container/vector"
     "fmt"
     "sort"
 	"time"
@@ -23,7 +22,7 @@ func (slices *Slices) Add(message *Message) {
     slices.getCurrentSlice().Add(message)
 }
 
-func (slices *Slices) ExtractClosedSlices(force bool) (closedSlices *vector.Vector) {
+func (slices *Slices) ExtractClosedSlices(force bool) (closedSlices SlicesList) {
     var current int64
     if force {
         current = -1
@@ -38,9 +37,9 @@ func (slices *Slices) ExtractClosedSlices(force bool) (closedSlices *vector.Vect
     })
 
     // Create an array to store slices
-    closedSlices = new(vector.Vector).Resize(0, totalClosedSlices)
+    closedSlices = make(SlicesList, 0, totalClosedSlices)
     slices.eachClosedSlice(current, func(number int64, slice *Slice) {
-        closedSlices.Push(slice)
+        closedSlices = append(closedSlices, slice)
         slices.Slices[number] = nil, false
     })
     sort.Sort(closedSlices)
@@ -49,7 +48,7 @@ func (slices *Slices) ExtractClosedSlices(force bool) (closedSlices *vector.Vect
 
 // ExtractClosedSampleSets finds closed slices, and stores all sample sets from them
 // in an array. Processed slices will be removed from the list of active slices.
-func (slices *Slices) ExtractClosedSampleSets(force bool) (closedSampleSets *vector.Vector) {
+func (slices *Slices) ExtractClosedSampleSets(force bool) (closedSampleSets SampleSetsList) {
     var current int64
     if force {
         current = -1
@@ -64,10 +63,10 @@ func (slices *Slices) ExtractClosedSampleSets(force bool) (closedSampleSets *vec
     })
 
     // Create an array to store sample sets
-    closedSampleSets = new(vector.Vector).Resize(0, totalSampleSets)
+    closedSampleSets = make(SampleSetsList, 0, totalSampleSets)
     slices.eachClosedSlice(current, func(number int64, slice *Slice) {
         for _, set := range slice.Sets {
-            closedSampleSets.Push(set)
+            closedSampleSets = append(closedSampleSets, set)
         }
         slices.Slices[number] = nil, false
     })

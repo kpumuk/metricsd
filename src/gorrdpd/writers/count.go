@@ -1,7 +1,6 @@
 package writers
 
 import (
-    "container/vector"
     "fmt"
     "gorrdpd/types"
 )
@@ -22,19 +21,19 @@ func (self *Count) Rollup(set *types.SampleSet) {
     Rollup(self, set)
 }
 
-func (self *Count) BatchRollup(sets *vector.Vector) {
+func (self *Count) BatchRollup(sets types.SampleSetsList) {
     BatchRollup(self, sets)
 }
 
 func (self *Count) rollupData(set *types.SampleSet) (data dataItem) {
     var ok, fail uint64
-    set.Values.Do(func(elem int) {
+    for _, elem := range set.Values {
         if elem >= 0 {
             ok++
         } else {
             fail++
         }
-    })
+    }
     data = &CountItem{time: set.Time, ok: ok, fail: fail}
     return
 }

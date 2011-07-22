@@ -13,8 +13,8 @@ func NewSlice(time int64) *Slice {
     return &Slice{Time: time, Sets: make(map[string]*SampleSet)}
 }
 
-func (slice *Slice) Less(sliceToCompare interface{}) bool {
-    return slice.Time < sliceToCompare.(*Slice).Time
+func (slice *Slice) Less(sliceToCompare *Slice) bool {
+    return slice.Time < sliceToCompare.Time
 }
 
 func (slice *Slice) Add(message *Message) {

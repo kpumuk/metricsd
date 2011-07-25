@@ -102,20 +102,20 @@ func batchRollup(writer Writer, from int, sets types.SampleSetsList, data []data
 func updateRrd(writer Writer, set *types.SampleSet, data dataItem, f func() []string) {
     file := getRrdFile(writer, set)
     if _, err := os.Stat(file); err != nil {
-        err := rrd.Create(file, int64(config.Global.SliceInterval), set.Time-int64(config.Global.SliceInterval), data.rrdInfo())
+        err := rrd.Create(file, int64(config.SliceInterval), set.Time-int64(config.SliceInterval), data.rrdInfo())
         if err != nil {
-            config.Global.Logger.Debug("Error occurred: %s", err)
+            config.Logger.Debug("Error occurred: %s", err)
             return
         }
     }
     err := rrd.Update(file, data.rrdTemplate(), f())
     if err != nil {
-        config.Global.Logger.Debug("Error occurred: %s", err)
+        config.Logger.Debug("Error occurred: %s", err)
     }
 }
 
 func getRrdFile(writer Writer, set *types.SampleSet) string {
-    dir := fmt.Sprintf("%s/%s", config.Global.DataDir, set.Source)
+    dir := fmt.Sprintf("%s/%s", config.DataDir, set.Source)
     os.MkdirAll(dir, 0755)
     return fmt.Sprintf("%s/%s-%s.rrd", dir, set.Name, writer.Name())
 }

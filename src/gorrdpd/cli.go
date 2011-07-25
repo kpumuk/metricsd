@@ -3,8 +3,10 @@ package main
 import (
 	"exec"
 	"flag"
+	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"gorrdpd/config"
 )
 
@@ -25,16 +27,20 @@ func parseCommandLineArguments() {
 	flag.Parse()
 
 	// Get root directory
-	binaryFile, _ := exec.LookPath(os.Args[0])
-	binaryRoot, _ := path.Split(binaryFile)
+	binaryRoot, error := getBinaryRootDir()
+	if error != nil {
+		fmt.Print(error)
+		os.Exit(1)
+	}
 
 	// Make config file path absolute
 	cfgpath := *configPath
 	if !path.IsAbs(cfgpath) {
 		cfgpath = path.Join(binaryRoot, cfgpath)
 	}
+
 	// Load config from a config file
-	config.Global.Load(cfgpath)
+	config.Load(cfgpath)
 	if *testAndExit {
 		os.Exit(0)
 	}
@@ -42,37 +48,55 @@ func parseCommandLineArguments() {
 	// Override options with values passed in command line arguments
 	// (but only if they have a value different from a default one)
 	if *listenAddr != config.DEFAULT_LISTEN {
-		config.Global.Listen = *listenAddr
+		config.Listen = *listenAddr
 	}
 	if *dataPath != config.DEFAULT_DATA_DIR {
-		config.Global.DataDir = *dataPath
+		config.DataDir = *dataPath
 	}
 	if *rootPath != config.DEFAULT_ROOT_DIR {
-		config.Global.RootDir = *rootPath
+		config.RootDir = *rootPath
 	}
 	if *debugLevel != int(config.DEFAULT_SEVERITY) {
-		config.Global.LogLevel = *debugLevel
+		config.LogLevel = *debugLevel
 	}
 	if *sliceInt != config.DEFAULT_SLICE_INTERVAL {
-		config.Global.SliceInterval = *sliceInt
+		config.SliceInterval = *sliceInt
 	}
 	if *writeInt != config.DEFAULT_WRITE_INTERVAL {
-		config.Global.WriteInterval = *writeInt
+		config.WriteInterval = *writeInt
 	}
 	if *batchWrites != config.DEFAULT_BATCH_WRITES {
-		config.Global.BatchWrites = *batchWrites
+		config.BatchWrites = *batchWrites
 	}
 	if *dnsLookup != config.DEFAULT_LOOKUP_DNS {
-		config.Global.LookupDns = *dnsLookup
+		config.LookupDns = *dnsLookup
 	}
 
 	// Make data directory path absolute
-	if !path.IsAbs(config.Global.DataDir) {
-		config.Global.DataDir = path.Join(binaryRoot, config.Global.DataDir)
+	if !path.IsAbs(config.DataDir) {
+		config.DataDir = path.Join(binaryRoot, config.DataDir)
 	}
 
 	// Make root dir path absolute
-	if !path.IsAbs(config.Global.RootDir) {
-		config.Global.RootDir = path.Join(binaryRoot, config.Global.RootDir)
+	if !path.IsAbs(config.RootDir) {
+		config.RootDir = path.Join(binaryRoot, config.RootDir)
 	}
+}
+
+func getBinaryRootDir() (binaryRoot string, err os.Error) {
+	var binaryFile string
+	var error os.Error
+	if binaryFile, error = exec.LookPath(os.Args[0]); error != nil {
+		err = os.NewError(fmt.Sprintf("Failed to retrieve gorrdpd executable file path: %s\n", error))
+		return
+	}
+	if binaryFile, error = filepath.Abs(binaryFile); error != nil {
+		err = os.NewError(fmt.Sprintf("Failed to get absolute path of the gorrdpd executable file: %s\n", error))
+		return
+	}
+	binaryRoot, _ = path.Split(binaryFile)
+	if r, d := path.Split(binaryRoot[:len(binaryRoot)-1]); d == "bin" {
+		binaryRoot = r
+	}
+	return
 }

@@ -70,28 +70,28 @@ func initialize() {
 	parseCommandLineArguments()
 
 	// Create logger
-	config.Global.Logger = logger.NewConsoleLogger(logger.Severity(config.Global.LogLevel))
-	log = config.Global.Logger
-	log.Debug("%s", config.Global)
+	config.Logger = logger.NewConsoleLogger(logger.Severity(config.LogLevel))
+	log = config.Logger
+	log.Debug("%s", config.String())
 
 	// Ensure data directory exists
-	if _, err := os.Stat(config.Global.DataDir); err != nil {
-		os.MkdirAll(config.Global.DataDir, 0755)
+	if _, err := os.Stat(config.DataDir); err != nil {
+		os.MkdirAll(config.DataDir, 0755)
 	}
 
 	// Resolve listen address
-	address, error := net.ResolveUDPAddr("udp", config.Global.Listen)
+	address, error := net.ResolveUDPAddr("udp", config.Listen)
 	if error != nil {
-		log.Fatal("Cannot parse \"%s\": %s", config.Global.Listen, error)
+		log.Fatal("Cannot parse \"%s\": %s", config.Listen, error)
 		os.Exit(1)
 	}
-	config.Global.UDPAddress = address
+	config.UDPAddress = address
 
 	// Initialize slices structure
-	timeline = types.NewTimeline(config.Global.SliceInterval)
+	timeline = types.NewTimeline(config.SliceInterval)
 
 	// Initialize host lookup cache
-	if config.Global.LookupDns {
+	if config.LookupDns {
 		hostLookupCache = make(map[string]string)
 	}
 
@@ -102,10 +102,10 @@ func initialize() {
 /***** Go routines ************************************************************/
 
 func listen(quit chan bool) {
-	log.Debug("Starting listener on %s", config.Global.UDPAddress)
+	log.Debug("Starting listener on %s", config.UDPAddress)
 
 	// Listen for requests
-	listener, error := net.ListenUDP("udp", config.Global.UDPAddress)
+	listener, error := net.ListenUDP("udp", config.UDPAddress)
 	if error != nil {
 		log.Fatal("Cannot listen: %s", error)
 		os.Exit(1)
@@ -153,7 +153,7 @@ func stats() {
 }
 
 func dumper(active_writers []writers.Writer, quit chan bool) {
-	ticker := time.NewTicker(int64(config.Global.WriteInterval) * 1000000000)
+	ticker := time.NewTicker(int64(config.WriteInterval) * 1000000000)
 	defer ticker.Stop()
 
 	for {
@@ -189,7 +189,7 @@ func process(addr *net.UDPAddr, buf string) {
 
 func lookupHost(addr *net.UDPAddr) (hostname string) {
 	ip := addr.IP.String()
-	if !config.Global.LookupDns {
+	if !config.LookupDns {
 		return ip
 	}
 
@@ -213,7 +213,7 @@ func lookupHost(addr *net.UDPAddr) (hostname string) {
 func rollupSlices(active_writers []writers.Writer, force bool) {
 	log.Debug("Rolling up timeline")
 
-	if config.Global.BatchWrites {
+	if config.BatchWrites {
 		closedSampleSets := timeline.ExtractClosedSampleSets(force)
 		for _, writer := range active_writers {
 			writers.BatchRollup(writer, closedSampleSets)

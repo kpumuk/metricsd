@@ -20,7 +20,7 @@ func Start() {
     web.Get("/metric/(.*)", metric)
     web.Get("/graph/(.*)/(.*)/(.*)", graph)
     web.Get("/host/(.*)", host)
-    web.Run(config.Global.Listen)
+    web.Run(config.Listen)
 }
 
 func summary() string {
@@ -85,7 +85,7 @@ func graph(ctx *web.Context, source, metric, writer string) {
         params.Rra = "daily"
     }
 
-    rrd_file := fmt.Sprintf("%s/%s/%s-%s.rrd", config.Global.DataDir, source, metric, writer)
+    rrd_file := fmt.Sprintf("%s/%s/%s-%s.rrd", config.DataDir, source, metric, writer)
     args := mustache.RenderFile(template("writers/"+writer), map[string]interface{}{
         "source":   source,
         "metric":   metric,
@@ -95,15 +95,15 @@ func graph(ctx *web.Context, source, metric, writer string) {
         "width":    params.Width,
         "height":   params.Height,
         "rra":      params.Rra,
-        "interval": config.Global.SliceInterval,
+        "interval": config.SliceInterval,
     })
     r, w, err := os.Pipe()
     if err != nil {
-        config.Global.Logger.Error("Pipe: %s", err)
+        config.Logger.Error("Pipe: %s", err)
         return
     }
 
-    // config.Global.Logger.Debug("started, %s", strings.Split(args, "\n", -1))
+    // config.Logger.Debug("started, %s", strings.Split(args, "\n", -1))
     attr := &os.ProcAttr{"", os.Environ(), []*os.File{nil, w, w}}
     process, err := os.StartProcess("/usr/bin/rrdtool", strings.Split(args, "\n", -1), attr)
     defer process.Release()
@@ -113,11 +113,11 @@ func graph(ctx *web.Context, source, metric, writer string) {
 
     wait, err := process.Wait(0)
     if err != nil {
-        config.Global.Logger.Error("wait: %s\n", err)
+        config.Logger.Error("wait: %s\n", err)
         return
     }
     if !wait.Exited() || wait.ExitStatus() != 0 {
-        config.Global.Logger.Error("date: %v\n", wait)
+        config.Logger.Error("date: %v\n", wait)
         return
     }
     return
@@ -126,5 +126,5 @@ func graph(ctx *web.Context, source, metric, writer string) {
 /***** Helper functions *******************************************************/
 
 func template(name string) string {
-    return path.Join(config.Global.RootDir, fmt.Sprintf("templates/%s.mustache", name))
+    return path.Join(config.RootDir, fmt.Sprintf("templates/%s.mustache", name))
 }

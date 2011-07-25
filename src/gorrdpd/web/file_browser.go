@@ -107,7 +107,7 @@ func (browser *Browser) ListCountGraphsGrouped() (groups graphItemGroupsList) {
 
 func (browser *Browser) ListSources(metric string) (sources []*graphItemSource) {
     sources = make([]*graphItemSource, 0, 10)
-    dir, err := ioutil.ReadDir(path.Join(config.Global.DataDir))
+    dir, err := ioutil.ReadDir(path.Join(config.DataDir))
     if err != nil {
         return
     }
@@ -124,7 +124,7 @@ func (browser *Browser) ListSources(metric string) (sources []*graphItemSource) 
 
 func (*Browser) List(source, metric, suffix string) (files graphItemsList) {
     files = make(graphItemsList, 0, 10)
-    dir, err := ioutil.ReadDir(path.Join(config.Global.DataDir, source))
+    dir, err := ioutil.ReadDir(path.Join(config.DataDir, source))
     if err != nil {
         return
     }

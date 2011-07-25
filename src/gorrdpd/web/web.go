@@ -14,6 +14,7 @@ import (
 /***** Web routines ***********************************************************/
 
 func Start() {
+	web.Config.StaticDir = path.Join(config.RootDir, "public")
     web.Get("/", summary)
     web.Get("/metric/(.*)/(.*)/(.*)", metric_graph)
     web.Get("/metric/(.*)/(.*)", host_metric)
@@ -98,7 +99,7 @@ func graph(ctx *web.Context, source, metric, writer string) {
         "interval": config.SliceInterval,
     })
     r, w, err := os.Pipe()
-    if err != nil {
+	if err != nil {
         config.Logger.Error("Pipe: %s", err)
         return
     }

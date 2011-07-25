@@ -17,10 +17,10 @@ func (slice *Slice) Less(sliceToCompare *Slice) bool {
     return slice.Time < sliceToCompare.Time
 }
 
-func (slice *Slice) Add(message *Message) {
-    slice.getSampleSet(slice.getAllSampleSetKey(message), "all", message.Name).Add(message)
-    if message.Source != "all" {
-        slice.getSampleSet(slice.getMachineSampleSetKey(message), message.Source, message.Name).Add(message)
+func (slice *Slice) Add(event *Event) {
+    slice.getSampleSet(slice.getAllSampleSetKey(event), "all", event.Name).Add(event)
+    if event.Source != "all" {
+        slice.getSampleSet(slice.getMachineSampleSetKey(event), event.Source, event.Name).Add(event)
     }
 }
 
@@ -39,10 +39,10 @@ func (slice *Slice) getSampleSet(key, source, name string) *SampleSet {
     return slice.Sets[key]
 }
 
-func (slice *Slice) getAllSampleSetKey(message *Message) string {
-    return fmt.Sprintf("all-%s", message.Name)
+func (slice *Slice) getAllSampleSetKey(event *Event) string {
+    return fmt.Sprintf("all-%s", event.Name)
 }
 
-func (slice *Slice) getMachineSampleSetKey(message *Message) string {
-    return fmt.Sprintf("%s-%s", message.Source, message.Name)
+func (slice *Slice) getMachineSampleSetKey(event *Event) string {
+    return fmt.Sprintf("%s-%s", event.Source, event.Name)
 }

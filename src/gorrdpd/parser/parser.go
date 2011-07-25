@@ -1,9 +1,9 @@
-// The parser package implements gorrdpd protocol messages parsing.
+// The parser package implements gorrdpd protocol events parsing.
 //
-// Basicly, message format is:
-//     [source@]metric:value[;message]
-// where source is the message source, metric and value - metric's name and value,
-// and message is another message in the same format (you can send several metrics
+// Basicly, event format is:
+//     [source@]metric:value[;event]
+// where source is the event source, metric and value - metric's name and value,
+// and event is another event in the same format (you can send several metrics
 // updates in the same package).
 package parser
 
@@ -16,34 +16,34 @@ import (
 )
 
 // Parse parses source buffer and invokes the given function, passing either parsed
-// message or an error (when failed to parse) for each message in the source buffer
-// (if there are several messages in the a bundle). Returns number of successfully
-// processed messages.
+// event or an error (when failed to parse) for each event in the source buffer
+// (if there are several events in the a bundle). Returns number of successfully
+// processed events.
 //
 // For example:
-//     parser.Parse("app01@user_login:1;response_time:154;hello", func(msg *Message, err os.Error) {
-//         fmt.Printf("Message=%v, Error=%v", msg, err)
+//     parser.Parse("app01@user_login:1;response_time:154;hello", func(msg *event, err os.Error) {
+//         fmt.Printf("event=%v, Error=%v", msg, err)
 //     })
 // will invoke the given callback three times:
-//     msg = &Message { Source: "app01", Name: "user_login",    Value: 1 },  err = nil
-//     msg = &Message { Source: "",      Name: "response_time", Value: 154}, err = nil
-//     msg = nil, err = os.Error (err.ToString() == "Message format is not valid: hello")
+//     msg = &Event { Source: "app01", Name: "user_login",    Value: 1 },  err = nil
+//     msg = &Event { Source: "",      Name: "response_time", Value: 154}, err = nil
+//     msg = nil, err = os.Error (err.ToString() == "Event format is invalid: hello")
 //
 // Return value for this example will be 2.
-func Parse(buf string, f func(message *types.Message, err os.Error)) int {
-    // Number of successfully processed messages
+func Parse(buf string, f func(event *types.Event, err os.Error)) int {
+    // Number of successfully processed events
     var count int
-    // Process multiple metrics in a single message
+    // Process multiple metrics in a single event
     for _, msg := range strings.Split(buf, ";", -1) {
         var source, name, svalue string
 
-        // Check if the message contains a source name
+        // Check if the event contains a source name
         if idx := strings.Index(msg, "@"); idx >= 0 {
             source = msg[:idx]
             msg = msg[idx+1:]
 
             if !validateMetric(source) {
-                f(nil, os.NewError(fmt.Sprintf("Source is invalid: %q (message=%q)", source, buf)))
+                f(nil, os.NewError(fmt.Sprintf("Source is invalid: %q (event=%q)", source, buf)))
                 continue
             }
         }
@@ -54,24 +54,24 @@ func Parse(buf string, f func(message *types.Message, err os.Error)) int {
             svalue = msg[idx+1:]
 
             if !validateMetric(name) {
-                f(nil, os.NewError(fmt.Sprintf("Metric name is invalid: %q (message=%q)", name, buf)))
+                f(nil, os.NewError(fmt.Sprintf("Metric name is invalid: %q (event=%q)", name, buf)))
                 continue
             }
             if len(name) == 0 {
-                f(nil, os.NewError(fmt.Sprintf("Metric name is empty (message=%q)", buf)))
+                f(nil, os.NewError(fmt.Sprintf("Metric name is empty (event=%q)", buf)))
                 continue
             }
         } else {
-            f(nil, os.NewError(fmt.Sprintf("Message format is invalid (message=%q)", buf)))
+            f(nil, os.NewError(fmt.Sprintf("Event format is invalid (event=%q)", buf)))
             continue
         }
 
         // Parse the value
         if value, error := strconv.Atoi(svalue); error != nil {
-            f(nil, os.NewError(fmt.Sprintf("Metric value %q is invalid (message=%q)", svalue, buf)))
+            f(nil, os.NewError(fmt.Sprintf("Metric value %q is invalid (event=%q)", svalue, buf)))
             continue
         } else {
-            f(types.NewMessage(source, name, value), nil)
+            f(types.NewEvent(source, name, value), nil)
             count += 1
         }
     }

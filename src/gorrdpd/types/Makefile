@@ -2,9 +2,10 @@ include ../../Make.inc
 
 TARG=gorrdpd/types
 GOFILES=\
-	message.go \
+	lists.go \
+	event.go \
 	slice.go \
-	slices.go \
+	timeline.go \
 	sample_set.go
 
 include $(GOROOT)/src/Make.pkg

@@ -1,0 +1,38 @@
+/usr/bin/rrdtool
+graph
+-
+--imgformat=PNG
+--start={{from}}
+--end=-300
+--title={{metric}} :: {{writer}}{{#rra}} :: {{rra}}{{/rra}}{{#source}} ({{source}}){{/source}}
+--base=1000
+--height={{#height}}{{height}}{{/height}}{{^height}}240{{/height}}
+--width={{#width}}{{width}}{{/width}}{{^width}}620{{/width}}
+--alt-autoscale-max
+--lower-limit=0
+--vertical-label=analyzed per {{interval}} seconds
+--slope-mode
+--font=TITLE:9:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+--font=AXIS:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+--font=LEGEND:8:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+--font=UNIT:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+DEF:a={{rrd_file}}:pct95mean:AVERAGE
+DEF:b={{rrd_file}}:pct95:AVERAGE
+DEF:c={{rrd_file}}:pct90mean:AVERAGE
+DEF:d={{rrd_file}}:pct90:AVERAGE
+DEF:e={{rrd_file}}:pct90dev:AVERAGE
+DEF:f={{rrd_file}}:pct95dev:AVERAGE
+AREA:a#FF897CFF:95% mean
+GPRINT:a:LAST:Current\:%8.2lf %s
+GPRINT:a:AVERAGE:Average\:%8.2lf %s
+GPRINT:a:MAX:Maximum\:%8.2lf %s\n
+LINE2:b#CC3525FF:95% max
+AREA:c#00CF00FF:90% mean
+GPRINT:c:LAST:Current\:%8.2lf %s
+GPRINT:c:AVERAGE:Average\:%8.2lf %s
+GPRINT:c:MAX:Maximum\:%8.2lf %s\n
+LINE2:d#96E78AFF:90% max
+GPRINT:d:MAX:90%% max\:%8.2lf %s
+GPRINT:e:AVERAGE:90%% dev\:%8.2lf %s
+GPRINT:b:MAX:95%% max\:%8.2lf %s
+GPRINT:f:AVERAGE:95%% dev\:%8.2lf %s\n

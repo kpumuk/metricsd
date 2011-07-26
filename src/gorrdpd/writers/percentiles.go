@@ -9,11 +9,14 @@ import (
 
 // Percentiles writer is used to calculate 90th and 95th percentiles, mean
 // values, and standard deviations under percentiles.
+//
+// NIST recommended method is used to calculate percentiles:
+// http://www.itl.nist.gov/div898/handbook/prc/section2/prc252.htm
 type Percentiles struct{}
 
-// PercentilesItem stores statistics information calculated by Percentiles
+// percentilesItem stores statistics information calculated by Percentiles
 // writer.
-type PercentilesItem struct {
+type percentilesItem struct {
 	// Timestamp of the sample set.
 	time int64
 	// 90th percentile.
@@ -48,7 +51,7 @@ func (self *Percentiles) BatchRollup(sets types.SampleSetsList) {
 }
 
 // rollupData performs summarization on the given sample set and returns
-// PercentilesItem with statistics.
+// percentilesItem with statistics.
 func (self *Percentiles) rollupData(set *types.SampleSet) (data dataItem) {
 	if len(set.Values) == 0 {
 		return
@@ -92,7 +95,7 @@ func (self *Percentiles) rollupData(set *types.SampleSet) (data dataItem) {
 		pct95sqdiff += math.Pow(float64(pct95mean) - float64(elem), 2)
 	}
 
-	data = &PercentilesItem{
+	data = &percentilesItem{
 		time:		set.Time,
 		pct90:		int64(pct90 + 0.5),
 		pct90mean:	int64(pct90mean + 0.5),
@@ -104,10 +107,10 @@ func (self *Percentiles) rollupData(set *types.SampleSet) (data dataItem) {
 	return
 }
 
-// String returns string representation of the given PercentilesItem.
-func (self *PercentilesItem) String() string {
+// String returns string representation of the given percentilesItem.
+func (self *percentilesItem) String() string {
 	return fmt.Sprintf(
-		"PercentilesItem[time=%d, pct90=%d, pct90mean=%d, pct90dev=%d, pct95=%d, pct95mean=%d, pct95dev=%d]",
+		"percentilesItem[time=%d, pct90=%d, pct90mean=%d, pct90dev=%d, pct95=%d, pct95mean=%d, pct95dev=%d]",
 		self.time,
 		self.pct90,
 		self.pct90mean,
@@ -119,7 +122,7 @@ func (self *PercentilesItem) String() string {
 }
 
 // rrdInfo returns the list of parameters used to create RRD file.
-func (*PercentilesItem) rrdInfo() []string {
+func (*percentilesItem) rrdInfo() []string {
 	return []string{
 		"DS:pct90:GAUGE:600:0:U",
 		"DS:pct90mean:GAUGE:600:0:U",
@@ -137,13 +140,13 @@ func (*PercentilesItem) rrdInfo() []string {
 }
 
 // rrdTemplate returns template for RRDTool used to update data.
-func (*PercentilesItem) rrdTemplate() string {
+func (*percentilesItem) rrdTemplate() string {
 	return "pct90:pct90mean:pct90dev:pct95:pct95mean:pct95dev"
 }
 
 // rrdString returns a string matching template format with the data to
 // update RRD files.
-func (self *PercentilesItem) rrdString() string {
+func (self *percentilesItem) rrdString() string {
 	return fmt.Sprintf(
 		"%d:%d:%d:%d:%d:%d:%d",
 		self.time,

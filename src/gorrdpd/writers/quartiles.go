@@ -10,7 +10,7 @@ import (
 // total number of values in a sample set.
 type Quartiles struct{}
 
-type QuartilesItem struct {
+type quartilesItem struct {
 	// Timestamp of the sample set.
 	time int64
 	// Minimum value in the sample set.
@@ -45,7 +45,7 @@ func (self *Quartiles) BatchRollup(sets types.SampleSetsList) {
 }
 
 // rollupData performs summarization on the given sample set and returns
-// QuartilesItem with statistics.
+// quartilesItem with statistics.
 func (self *Quartiles) rollupData(set *types.SampleSet) (data dataItem) {
 	if len(set.Values) < 2 {
 		return
@@ -69,7 +69,7 @@ func (self *Quartiles) rollupData(set *types.SampleSet) (data dataItem) {
 		q2 := (lo_sum + hi_sum) / (lo_c + hi_c)
 		q3 := hi_sum / hi_c
 
-		data = &QuartilesItem{
+		data = &quartilesItem{
 			time:	set.Time,
 			lo:		lo,
 			q1:		q1,
@@ -82,10 +82,10 @@ func (self *Quartiles) rollupData(set *types.SampleSet) (data dataItem) {
 	return
 }
 
-// String returns string representation of the given QuartilesItem.
-func (self *QuartilesItem) String() string {
+// String returns string representation of the given quartilesItem.
+func (self *quartilesItem) String() string {
 	return fmt.Sprintf(
-		"QuartilesItem[time=%d, lo=%d, q1=%d, q2=%d, q3=%d, hi=%d, total=%d]",
+		"quartilesItem[time=%d, lo=%d, q1=%d, q2=%d, q3=%d, hi=%d, total=%d]",
 		self.time,
 		self.lo,
 		self.q1,
@@ -97,7 +97,7 @@ func (self *QuartilesItem) String() string {
 }
 
 // rrdInfo returns the list of parameters used to create RRD file.
-func (*QuartilesItem) rrdInfo() []string {
+func (*quartilesItem) rrdInfo() []string {
 	return []string{
 		"DS:q1:GAUGE:600:0:U",
 		"DS:q2:GAUGE:600:0:U",
@@ -118,13 +118,13 @@ func (*QuartilesItem) rrdInfo() []string {
 }
 
 // rrdTemplate returns template for RRDTool used to update data.
-func (*QuartilesItem) rrdTemplate() string {
+func (*quartilesItem) rrdTemplate() string {
 	return "q1:q2:q3:lo:hi:total"
 }
 
 // rrdString returns a string matching template format with the data to
 // update RRD files.
-func (self *QuartilesItem) rrdString() string {
+func (self *quartilesItem) rrdString() string {
 	return fmt.Sprintf(
 		"%d:%d:%d:%d:%d:%d:%d",
 		self.time,

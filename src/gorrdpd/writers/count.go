@@ -8,8 +8,8 @@ import (
 // Count writer is used to calculate positive and negative numbers.
 type Count struct{}
 
-// CountItem stores summary information about sample set.
-type CountItem struct {
+// countItem stores summary information about sample set.
+type countItem struct {
 	// Timestamp of the sample set.
 	time int64
 	// Number of positive values.
@@ -36,7 +36,7 @@ func (self *Count) BatchRollup(sets types.SampleSetsList) {
 }
 
 // rollupData performs summarization on the given sample set and returns
-// CountItem with statistics.
+// countItem with statistics.
 func (self *Count) rollupData(set *types.SampleSet) (data dataItem) {
 	var ok, fail uint64
 	for _, elem := range set.Values {
@@ -46,17 +46,17 @@ func (self *Count) rollupData(set *types.SampleSet) (data dataItem) {
 			fail++
 		}
 	}
-	data = &CountItem{time: set.Time, ok: ok, fail: fail}
+	data = &countItem{time: set.Time, ok: ok, fail: fail}
 	return
 }
 
-// String returns string representation of the given CountItem.
-func (self *CountItem) String() string {
-	return fmt.Sprintf("CountItem[time=%d, ok=%d, fail=%d]", self.time, self.ok, self.fail)
+// String returns string representation of the given countItem.
+func (self *countItem) String() string {
+	return fmt.Sprintf("countItem[time=%d, ok=%d, fail=%d]", self.time, self.ok, self.fail)
 }
 
 // rrdInfo returns the list of parameters used to create RRD file.
-func (*CountItem) rrdInfo() []string {
+func (*countItem) rrdInfo() []string {
 	return []string{
 		"DS:ok:ABSOLUTE:600:0:U",
 		"DS:fail:ABSOLUTE:600:0:U",
@@ -67,12 +67,12 @@ func (*CountItem) rrdInfo() []string {
 }
 
 // rrdTemplate returns template for RRDTool used to update data.
-func (*CountItem) rrdTemplate() string {
+func (*countItem) rrdTemplate() string {
 	return "ok:fail"
 }
 
 // rrdString returns a string matching template format with the data to
 // update RRD files.
-func (self *CountItem) rrdString() string {
+func (self *countItem) rrdString() string {
 	return fmt.Sprintf("%d:%d:%d", self.time, self.ok, self.fail)
 }

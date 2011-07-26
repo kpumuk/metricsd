@@ -2,6 +2,7 @@ package writers
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"gorrdpd/types"
 )
@@ -47,38 +48,26 @@ func (self *Quartiles) BatchRollup(sets types.SampleSetsList) {
 // rollupData performs summarization on the given sample set and returns
 // quartilesItem with statistics.
 func (self *Quartiles) rollupData(set *types.SampleSet) (data dataItem) {
-	if len(set.Values) < 2 {
+	if len(set.Values) == 0 {
 		return
 	}
 	sort.Sort(set.Values)
 	number := int64(len(set.Values))
 	lo := int64(set.Values[0])
 	hi := int64(set.Values[number - 1])
-	lo_c := number / 2
-	hi_c := number - lo_c
-	if lo_c > 0 && hi_c > 0 {
-		var lo_sum int64 = 0
-		var hi_sum int64 = 0
-		for _, elem := range set.Values[0:lo_c] {
-			lo_sum += int64(elem)
-		}
-		for _, elem := range set.Values[lo_c:lo_c+hi_c] {
-			hi_sum += int64(elem)
-		}
-		q1 := lo_sum / lo_c
-		q2 := (lo_sum + hi_sum) / (lo_c + hi_c)
-		q3 := hi_sum / hi_c
 
-		data = &quartilesItem{
-			time:	set.Time,
-			lo:		lo,
-			q1:		q1,
-			q2:		q2,
-			q3:		q3,
-			hi:		hi,
-			total:	number,
-		}
+	q1, q2, q3 := quartiles(set)
+
+	data = &quartilesItem{
+		time:	set.Time,
+		lo:		lo,
+		q1:		int64(q1 + 0.5),
+		q2:		int64(q2 + 0.5),
+		q3:		int64(q3 + 0.5),
+		hi:		hi,
+		total:	number,
 	}
+
 	return
 }
 
@@ -135,4 +124,26 @@ func (self *quartilesItem) rrdString() string {
 		self.hi,
 		self.total,
 	)
+}
+
+// quartiles calculates quartiles for the given sample set.
+func quartiles(set *types.SampleSet) (q1, q2, q3 float64) {
+	number := int64(len(set.Values))
+	q2index, q2 := median(set.Values)
+	_, q1 = median(set.Values[:q2index+1])
+	_, q3 = median(set.Values[number-q2index-1:])
+	return
+}
+
+// median calculates value and index of the median for the given sample set.
+func median(set []int) (index int64, median float64) {
+	number := int64(len(set))
+	var n float64 = float64(number - 1) / 2.0
+	k, d := math.Modf(n)
+	index = int64(k)
+	median = float64(set[index])
+	if index + 1 < number {
+		median += d * float64(set[index + 1] - set[index])
+	}
+	return
 }

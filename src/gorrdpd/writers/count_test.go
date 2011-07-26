@@ -2,7 +2,6 @@ package writers
 
 import (
 	. "launchpad.net/gocheck"
-	"gorrdpd/types"
 )
 
 type CountS struct {
@@ -15,32 +14,25 @@ func (s *CountS) SetUpTest(c *C) {
 }
 
 func (s *CountS) TestRollupDataWithEmptySampleSet(c *C) {
-	ss := types.NewSampleSet(10, "src", "metric")
+	ss := createSampleSet(1000)
 	data := s.count.rollupData(ss)
-	c.Check(data, Equals, &countItem{time: 10, ok: 0, fail: 0})
+	c.Check(data, Equals, &countItem{time: 1000, ok: 0, fail: 0})
 }
 
 func (s *CountS) TestRollupDataWithSampleSetContainsZero(c *C) {
-	ss := types.NewSampleSet(11, "src", "metric")
-	ss.Add(&types.Event{Value:0})
+	ss := createSampleSet(2000, 0)
 	data := s.count.rollupData(ss)
-	c.Check(data, Equals, &countItem{time: 11, ok: 0, fail: 0})
+	c.Check(data, Equals, &countItem{time: 2000, ok: 0, fail: 0})
 }
 
 func (s *CountS) TestRollupDataWithSimpleSampleSet(c *C) {
-	ss := types.NewSampleSet(12, "src", "metric")
-	ss.Add(&types.Event{Value:1})
-	ss.Add(&types.Event{Value:-1})
+	ss := createSampleSet(3000, 1, -1)
 	data := s.count.rollupData(ss)
-	c.Check(data, Equals, &countItem{time: 12, ok: 1, fail: 1})
+	c.Check(data, Equals, &countItem{time: 3000, ok: 1, fail: 1})
 }
 
 func (s *CountS) TestRollupDataWithComplexSampleSet(c *C) {
-	ss := types.NewSampleSet(13, "src", "metric")
-	ss.Add(&types.Event{Value:5})
-	ss.Add(&types.Event{Value:1})
-	ss.Add(&types.Event{Value:1000})
-	ss.Add(&types.Event{Value:-5})
+	ss := createSampleSet(4000, 5, 1, 1000, -5)
 	data := s.count.rollupData(ss)
-	c.Check(data, Equals, &countItem{time: 13, ok: 3, fail: 1})
+	c.Check(data, Equals, &countItem{time: 4000, ok: 3, fail: 1})
 }

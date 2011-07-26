@@ -57,23 +57,9 @@ func (self *Percentiles) rollupData(set *types.SampleSet) (data dataItem) {
 		return
 	}
 	sort.Sort(set.Values)
-	number := int64(len(set.Values))
-	var n90 float64 = 90.0 / 100.0 * (float64(number) + 1)
-	k90, d90 := math.Modf(n90)
-	var n95 float64 = 95.0 / 100.0 * (float64(number) + 1)
-	k95, d95 := math.Modf(n95)
 
-	pct90index := int64(k90)
-	pct95index := int64(k95)
-
-	pct90 := float64(set.Values[pct90index - 1])
-	pct95 := float64(set.Values[pct95index - 1])
-	if pct90index > 1 && pct90index < number {
-		pct90 += d90 * float64(set.Values[pct90index] - set.Values[pct90index - 1])
-	}
-	if pct95index > 1 && pct95index < number {
-		pct95 += d95 * float64(set.Values[pct95index] - set.Values[pct95index - 1])
-	}
+	pct90index, pct90 := pecentile(0.90, set)
+	pct95index, pct95 := pecentile(0.95, set)
 
 	var pct90sum float64 = 0
 	var pct95sum float64 = 0
@@ -157,4 +143,19 @@ func (self *percentilesItem) rrdString() string {
 		self.pct95mean,
 		self.pct90dev,
 	)
+}
+
+// percentile calculates pth percentile for the given sample set.
+func pecentile(p float64, set *types.SampleSet) (index int64, pct float64) {
+	number := int64(len(set.Values))
+
+	var n float64 = p * (float64(number) + 1)
+	k, d := math.Modf(n)
+	index = int64(k)
+	pct = float64(set.Values[index - 1])
+	if index > 1 && index < number {
+		pct += d * float64(set.Values[index] - set.Values[index - 1])
+	}
+
+	return
 }

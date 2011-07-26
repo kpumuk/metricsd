@@ -50,47 +50,56 @@ func (self *Percentiles) BatchRollup(sets types.SampleSetsList) {
 // rollupData performs summarization on the given sample set and returns
 // PercentilesItem with statistics.
 func (self *Percentiles) rollupData(set *types.SampleSet) (data dataItem) {
-	if len(set.Values) < 2 {
+	if len(set.Values) == 0 {
 		return
 	}
 	sort.Sort(set.Values)
 	number := int64(len(set.Values))
-	pct90index := number - int64((100.0 - 90.0) / 100.0 * float64(number)) - 1
-	pct95index := number - int64((100.0 - 95.0) / 100.0 * float64(number)) - 1
+	var n90 float64 = 90.0 / 100.0 * (float64(number) + 1)
+	k90, d90 := math.Modf(n90)
+	var n95 float64 = 95.0 / 100.0 * (float64(number) + 1)
+	k95, d95 := math.Modf(n95)
 
-	if pct90index >= 0 && pct95index >= 0 {
-		pct90 := int64(set.Values[pct90index])
-		pct95 := int64(set.Values[pct95index])
+	pct90index := int64(k90)
+	pct95index := int64(k95)
 
-		var pct90sum int64 = 0
-		var pct95sum int64 = 0
-		for idx, elem := range set.Values[0:pct95index] {
-			if int64(idx) <= pct90index {
-				pct90sum += int64(elem)
-			}
-			pct95sum += int64(elem)
+	pct90 := float64(set.Values[pct90index - 1])
+	pct95 := float64(set.Values[pct95index - 1])
+	if pct90index > 1 && pct90index < number {
+		pct90 += d90 * float64(set.Values[pct90index] - set.Values[pct90index - 1])
+	}
+	if pct95index > 1 && pct95index < number {
+		pct95 += d95 * float64(set.Values[pct95index] - set.Values[pct95index - 1])
+	}
+
+	var pct90sum float64 = 0
+	var pct95sum float64 = 0
+	for idx, elem := range set.Values[0:pct95index] {
+		if int64(idx) < pct90index {
+			pct90sum += float64(elem)
 		}
-		var pct90mean int64 = pct90sum / pct90index
-		var pct95mean int64 = pct95sum / pct95index
+		pct95sum += float64(elem)
+	}
+	var pct90mean float64 = pct90sum / float64(pct90index)
+	var pct95mean float64 = pct95sum / float64(pct95index)
 
-		var pct90sqdiff float64 = 0
-		var pct95sqdiff float64 = 0
-		for idx, elem := range set.Values[0:pct95index] {
-			if int64(idx) <= pct90index {
-				pct90sqdiff += math.Pow(float64(pct90mean) - float64(elem), 2)
-			}
-			pct95sqdiff += math.Pow(float64(pct95mean) - float64(elem), 2)
+	var pct90sqdiff float64 = 0
+	var pct95sqdiff float64 = 0
+	for idx, elem := range set.Values[0:pct95index] {
+		if int64(idx) <= pct90index {
+			pct90sqdiff += math.Pow(float64(pct90mean) - float64(elem), 2)
 		}
+		pct95sqdiff += math.Pow(float64(pct95mean) - float64(elem), 2)
+	}
 
-		data = &PercentilesItem{
-			time:		set.Time,
-			pct90:		pct90,
-			pct90mean:	pct90mean,
-			pct90dev:	int64(math.Sqrt(pct90sqdiff / float64(pct90index))),
-			pct95:		pct95,
-			pct95mean:	pct95mean,
-			pct95dev:	int64(math.Sqrt(pct95sqdiff / float64(pct95index))),
-		}
+	data = &PercentilesItem{
+		time:		set.Time,
+		pct90:		int64(pct90 + 0.5),
+		pct90mean:	int64(pct90mean + 0.5),
+		pct90dev:	int64(math.Sqrt(pct90sqdiff / float64(pct90index)) + 0.5),
+		pct95:		int64(pct95 + 0.5),
+		pct95mean:	int64(pct95mean + 0.5),
+		pct95dev:	int64(math.Sqrt(pct95sqdiff / float64(pct95index)) + 0.5),
 	}
 	return
 }

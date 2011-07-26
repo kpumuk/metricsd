@@ -16,7 +16,7 @@ install: build rrdtool
 	if test -e $(DESTINATION)/gorrdpd; \
 	then mv $(DESTINATION)/gorrdpd $(DESTINATION)/gorrdpd.old; \
 	fi
-	cp -r bin/gorrdpd bin/gorrdpd.sh templates $(DESTINATION)
+	cp -r bin/gorrdpd bin/gorrdpd.sh templates public $(DESTINATION)
 	if test ! -e $(DESTINATION)/gorrdpd.conf; \
 	then cp gorrdpd.conf.sample $(DESTINATION)/gorrdpd.conf; \
 	fi

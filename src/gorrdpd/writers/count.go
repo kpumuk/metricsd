@@ -40,9 +40,9 @@ func (self *Count) BatchRollup(sets types.SampleSetsList) {
 func (self *Count) rollupData(set *types.SampleSet) (data dataItem) {
 	var ok, fail uint64
 	for _, elem := range set.Values {
-		if elem >= 0 {
+		if elem > 0 {
 			ok++
-		} else {
+		} else if elem < 0 {
 			fail++
 		}
 	}

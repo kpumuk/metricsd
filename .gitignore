@@ -6,6 +6,7 @@ _test
 *.go~
 *.cgo?.*
 _cgo_*
+_testmain.go
 bin/gorrdpd
 bin/benchmark
 data

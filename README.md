@@ -74,3 +74,9 @@ There are two writers currently implemented:
 1. `count` — calculates number of successful (value > `0`) and failes (value < `0`) events. Data sources: `ok` — number of successful events, `fail` — number of failed events.
 2. `quartiles` — calculates [quartiles](http://en.wikipedia.org/wiki/Quartile) for input data. Creates following data sources: `q1` (first quartile), `q2` (second quartile), `q3` (third quartile), `hi` (max sample), `lo` (min sample), `total` (number of samples).
 3. `percentiles` — calculates 90th and 95th [percentiles](http://en.wikipedia.org/wiki/Percentile) for input data, along with [mean value](http://en.wikipedia.org/wiki/Arithmetic_mean) and [standard deviation](http://en.wikipedia.org/wiki/Standard_deviation) for values under the percentile. Creates following data sources: `pct90` (90th percentile), `pct90mean` (mean of values under 90th percentile), `pct90dev` (standard deviation of values under 95th percentile), `pct95` (95th percentile), `pct95mean` (mean of values under 95th percentile), `pct95dev` (standard deviation of values under 95th percentile).
+
+## Screenshots
+
+![GORRDPD: Index Page](http://kpumuk.github.com/gorrdpd/images/index.png)
+
+![GORRDPD: Metric Details](http://kpumuk.github.com/gorrdpd/images/metric.png)

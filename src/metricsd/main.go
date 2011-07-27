@@ -143,10 +143,10 @@ func stats() {
 
 	for {
 		<-ticker.C
-		timeline.Add(types.NewEvent("all", "metricsd$events_count", int(eventsReceived)))
-		timeline.Add(types.NewEvent("all", "metricsd$traffic_in", int(bytesReceived)))
-		timeline.Add(types.NewEvent("all", "metricsd$memory_used", int(runtime.MemStats.Alloc/1024)))
-		timeline.Add(types.NewEvent("all", "metricsd$memory_system", int(runtime.MemStats.Sys/1024)))
+		timeline.Add(types.NewEvent("all", "metricsd.events.count", int(eventsReceived)))
+		timeline.Add(types.NewEvent("all", "metricsd.traffic_in", int(bytesReceived)))
+		timeline.Add(types.NewEvent("all", "metricsd.memory.used", int(runtime.MemStats.Alloc/1024)))
+		timeline.Add(types.NewEvent("all", "metricsd.memory.system", int(runtime.MemStats.Sys/1024)))
 
 		eventsReceived = 0
 		bytesReceived = 0

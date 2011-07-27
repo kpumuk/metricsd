@@ -3,6 +3,7 @@ package writers
 import (
 	"fmt"
 	"os"
+	"strings"
 	"metricsd/config"
 	"metricsd/types"
 	"github.com/kpumuk/gorrd"
@@ -117,5 +118,40 @@ func updateRrd(writer Writer, set *types.SampleSet, data dataItem, f func() []st
 func getRrdFile(writer Writer, set *types.SampleSet) string {
 	dir := fmt.Sprintf("%s/%s", config.DataDir, set.Source)
 	os.MkdirAll(dir, 0755)
-	return fmt.Sprintf("%s/%s-%s.rrd", dir, set.Name, writer.Name())
+	// This is temporary solution while we migrate from $ grouping to .
+	file := fmt.Sprintf("%s-%s", strings.Replace(set.Name, "$", ".", -1), writer.Name())
+	path := fmt.Sprintf("%s/%s.rrd", dir, file)
+	migrateDollarGroupsToDots(dir, file, path)
+	return path
+}
+
+func migrateDollarGroupsToDots(dir, file, path string) {
+	if _, err := os.Stat(path); err != nil {
+		oldFile := strings.Replace(file, ".", "$", 1)
+		oldPath := fmt.Sprintf("%s/%s.rrd", dir, oldFile)
+		config.Logger.Info("Probing %s", oldPath)
+		if _, err := os.Stat(oldPath); err == nil {
+			config.Logger.Info("Old file exists, renaming %s to %s", oldPath, path)
+			os.Rename(oldPath, path)
+			return
+		}
+
+		oldFile = strings.Replace(oldFile, ".", "_", -1)
+		oldPath = fmt.Sprintf("%s/%s.rrd", dir, oldFile)
+		config.Logger.Info("Probing %s", oldPath)
+		if _, err := os.Stat(oldPath); err == nil {
+			config.Logger.Info("Old file exists, renaming %s to %s", oldPath, path)
+			os.Rename(oldPath, path)
+			return
+		}
+
+		oldFile = strings.Replace(oldFile, "$", "_", -1)
+		oldPath = fmt.Sprintf("%s/%s.rrd", dir, oldFile)
+		config.Logger.Info("Probing %s", oldPath)
+		if _, err := os.Stat(oldPath); err == nil {
+			config.Logger.Info("Old file exists, renaming %s to %s", oldPath, path)
+			os.Rename(oldPath, path)
+			return
+		}
+	}
 }

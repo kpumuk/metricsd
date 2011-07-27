@@ -138,17 +138,20 @@ func (*Browser) List(source, metric, suffix string) (files graphItemsList) {
             var name, writer, group, title string
 
             split := strings.LastIndex(fi.Name, "-")
-            name = fi.Name[0:split]
+            name = fi.Name[:split]
             if len(metric) > 0 && name != metric {
                 continue
             }
             writer = fi.Name[split+1 : len(fi.Name)-len(".rrd")]
 
             split = strings.Index(name, "$")
+			if split < 0 {
+				split = strings.Index(name, ".")
+			}
             if split >= 0 {
-                group = name[0:split]
+                group = name[:split]
                 title = name[split+1:]
-            } else {
+			} else {
                 group = ""
                 title = name
             }

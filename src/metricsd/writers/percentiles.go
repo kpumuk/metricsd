@@ -141,7 +141,7 @@ func (self *percentilesItem) rrdString() string {
 		self.pct90dev,
 		self.pct95,
 		self.pct95mean,
-		self.pct90dev,
+		self.pct95dev,
 	)
 }
 

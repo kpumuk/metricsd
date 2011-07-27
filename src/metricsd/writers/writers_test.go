@@ -3,7 +3,7 @@ package writers
 import (
 	. "launchpad.net/gocheck"
 	"testing"
-	"gorrdpd/types"
+	"metricsd/types"
 )
 
 // Hook up gocheck into the gotest runner.

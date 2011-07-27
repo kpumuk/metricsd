@@ -6,7 +6,7 @@ import (
     "os"
     "path"
     "strings"
-	"gorrdpd/config"
+	"metricsd/config"
     "github.com/hoisie/web.go"
     "github.com/hoisie/mustache.go"
 )

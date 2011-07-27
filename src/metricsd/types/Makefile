@@ -1,6 +1,6 @@
 include ../../Make.inc
 
-TARG=gorrdpd/types
+TARG=metricsd/types
 GOFILES=\
 	lists.go \
 	event.go \

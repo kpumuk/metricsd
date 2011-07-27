@@ -1,16 +1,16 @@
-// The types package implements various types needed by gorrdpd to store
+// The types package implements various types needed by MetricsD to store
 // data.
 //
-// Incoming metrics are stored in instances of Message struct and hold
+// Incoming metrics are stored in instances of Event struct and hold
 // information about source, metric's name, and value.
 //
 // The most interesting part is the structure holding metrics after they
 // was parsed, but before aggregated and saved into the RRD. Basically,
 // it could be represented in following way:
 //
-//     Slices -> []Slice -> []SampleSet
+//     Timeline -> []Slice -> []SampleSet
 //
-// Slices is a root structure, where slices being stored. Slice basically is
+// Timeline is a root structure, where slices being stored. Slice basically is
 // an list of metrics with their values for a given period of time, which
 // depends on SliceInterval config value. For example, if SliceInterval is 10,
 // period beginnings will be the multiples of 10 (e.g., 1283473320-1283473329).
@@ -24,15 +24,15 @@
 //
 // 1. Add a message to Slices:
 //     // Somewhere in the beginning, there usually only on Slices instance
-//     slices := types.NewSlices(10)
+//     timeline := types.NewTimeline(10)
 //     // When you receive message
-//     msg := NewMessage("app01", "user_login", 1)
-//     slices.Add(msg)
+//     event := NewEvent("app01", "user_login", 1)
+//     timeline.Add(event)
 // 2. Retrieving "closed" slices (or sample sets) to process them and store in some DB:
 //     // retrieve closed slices
-//     var closedSlices SlicesList = slices.ExtractClosedSlices(false)
+//     var closedSlices SlicesList = timeline.ExtractClosedSlices(false)
 //     // or retrieve all sample sets for all closed slices in a single list
-//     var closedSampleSets SampleSetsList = slices.ExtractClosedSampleSets(false)
+//     var closedSampleSets SampleSetsList = timeline.ExtractClosedSampleSets(false)
 //
 
 package types

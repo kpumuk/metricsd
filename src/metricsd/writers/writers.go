@@ -3,8 +3,8 @@ package writers
 import (
 	"fmt"
 	"os"
-	"gorrdpd/config"
-	"gorrdpd/types"
+	"metricsd/config"
+	"metricsd/types"
 	"github.com/kpumuk/gorrd"
 )
 

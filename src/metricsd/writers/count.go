@@ -2,7 +2,7 @@ package writers
 
 import (
 	"fmt"
-	"gorrdpd/types"
+	"metricsd/types"
 )
 
 // Count writer is used to calculate positive and negative numbers.

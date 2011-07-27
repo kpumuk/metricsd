@@ -1,24 +1,24 @@
 ifeq ($(DESTINATION),)
-DESTINATION:=/usr/local/gorrdpd
+DESTINATION:=/usr/local/metricsd
 endif
 
 all: build
 
 build:
-	GOPATH=$(CURDIR) goinstall -clean gorrdpd
+	GOPATH=$(CURDIR) goinstall -clean metricsd
 	GOPATH=$(CURDIR) goinstall -clean benchmark
 
 install: build rrdtool
 	mkdir -p $(DESTINATION)/data
-	if test -e $(DESTINATION)/gorrdpd.old; \
-	then rm -f $(DESTINATION)/gorrdpd.old; \
+	if test -e $(DESTINATION)/metricsd.old; \
+	then rm -f $(DESTINATION)/metricsd.old; \
 	fi
-	if test -e $(DESTINATION)/gorrdpd; \
-	then mv $(DESTINATION)/gorrdpd $(DESTINATION)/gorrdpd.old; \
+	if test -e $(DESTINATION)/metricsd; \
+	then mv $(DESTINATION)/metricsd $(DESTINATION)/metricsd.old; \
 	fi
-	cp -r bin/gorrdpd bin/gorrdpd.sh templates public $(DESTINATION)
-	if test ! -e $(DESTINATION)/gorrdpd.conf; \
-	then cp gorrdpd.conf.sample $(DESTINATION)/gorrdpd.conf; \
+	cp -r bin/metricsd bin/metricsd.sh templates public $(DESTINATION)
+	if test ! -e $(DESTINATION)/metricsd.conf; \
+	then cp metricsd.conf.sample $(DESTINATION)/metricsd.conf; \
 	fi
 
 rrdtool:
@@ -27,7 +27,4 @@ rrdtool:
 	fi
 
 clean:
-	if test -e $(GORRD_DIR); \
-	then make -C $(GORRD_DIR) clean; \
-	fi
 	make -C src clean

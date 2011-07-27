@@ -1,6 +1,6 @@
 include ../../Make.inc
 
-TARG=gorrdpd/writers
+TARG=metricsd/writers
 GOFILES=\
 	writers.go \
 	count.go \

@@ -1,4 +1,4 @@
-// Package config implements configuration management for gorrdpd.
+// Package config implements configuration management for MetricsD.
 package config
 
 import (
@@ -6,11 +6,11 @@ import (
 	"json"
 	"net"
 	"os"
-	"gorrdpd/logger"
+	"metricsd/logger"
 )
 
 const (
-	DEFAULT_CONFIG_PATH		= "./gorrdpd.conf"
+	DEFAULT_CONFIG_PATH		= "./metricsd.conf"
 	DEFAULT_LISTEN			= "0.0.0.0:6311"
 	DEFAULT_DATA_DIR		= "./data"
 	DEFAULT_ROOT_DIR		= "."

@@ -2,7 +2,7 @@ package writers
 
 import (
 	. "launchpad.net/gocheck"
-	"gorrdpd/types"
+	"metricsd/types"
 )
 
 type PercentilesS struct {

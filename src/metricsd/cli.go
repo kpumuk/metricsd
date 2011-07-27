@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"gorrdpd/config"
+	"metricsd/config"
 )
 
 var (
@@ -87,11 +87,11 @@ func getBinaryRootDir() (binaryRoot string, err os.Error) {
 	var binaryFile string
 	var error os.Error
 	if binaryFile, error = exec.LookPath(os.Args[0]); error != nil {
-		err = os.NewError(fmt.Sprintf("Failed to retrieve gorrdpd executable file path: %s\n", error))
+		err = os.NewError(fmt.Sprintf("Failed to retrieve metricsd executable file path: %s\n", error))
 		return
 	}
 	if binaryFile, error = filepath.Abs(binaryFile); error != nil {
-		err = os.NewError(fmt.Sprintf("Failed to get absolute path of the gorrdpd executable file: %s\n", error))
+		err = os.NewError(fmt.Sprintf("Failed to get absolute path of the metricsd executable file: %s\n", error))
 		return
 	}
 	binaryRoot, _ = path.Split(binaryFile)

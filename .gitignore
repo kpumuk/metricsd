@@ -7,10 +7,10 @@ _test
 *.cgo?.*
 _cgo_*
 _testmain.go
-bin/gorrdpd
+bin/metricsd
 bin/benchmark
 data
-gorrdpd.conf
+metricsd.conf
 pkg
 src/benchmark/benchmark
-src/gorrdpd/gorrdpd
+src/metricsd/metricsd

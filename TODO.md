@@ -1,4 +1,4 @@
-TODO list for the gorrdpd project
+TODO list for the MetricsD project
 =================================
 There is no priority on these tasks, just brain dump.
 

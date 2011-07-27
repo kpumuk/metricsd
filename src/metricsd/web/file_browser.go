@@ -5,7 +5,7 @@ import (
     "path"
 	"sort"
     "strings"
-	"gorrdpd/config"
+	"metricsd/config"
 )
 
 type graphItem struct {

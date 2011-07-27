@@ -1,4 +1,4 @@
-// The parser package implements gorrdpd protocol events parsing.
+// The parser package implements MetricsD protocol events parsing.
 //
 // Basicly, event format is:
 //     [source@]metric:value[;event]
@@ -12,7 +12,7 @@ import (
     "os"
     "strconv"
     "strings"
-    "gorrdpd/types"
+    "metricsd/types"
 )
 
 // Parse parses source buffer and invokes the given function, passing either parsed

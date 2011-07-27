@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Resolve absolute path of the gorrdpd root directory
+# Resolve absolute path of the metricsd root directory
 ABSPATH="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
 ROOT=$(dirname "$ABSPATH")
 # Some useful variables
-SERVER="${ROOT}/gorrdpd"
+SERVER="${ROOT}/metricsd"
 SERVER_ARGS=""
-SERVER_PID="${ROOT}/log/gorrdpd.pid"
-SERVER_LOG="${ROOT}/log/gorrdpd.log"
+SERVER_PID="${ROOT}/log/metricsd.pid"
+SERVER_LOG="${ROOT}/log/metricsd.log"
 
 mkdir -p "${ROOT}/log"
 # Make sure $ROOT is a current working directory

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
-	"gorrdpd/types"
+	"metricsd/types"
 )
 
 // Quartiles writer is used to calculate quartiles, min and max values, and

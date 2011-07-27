@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
-	"gorrdpd/types"
+	"metricsd/types"
 )
 
 // Percentiles writer is used to calculate 90th and 95th percentiles, mean

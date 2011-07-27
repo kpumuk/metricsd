@@ -1,20 +1,20 @@
-# gorrdpd
+# MetricsD
 
 A simple statistics collector, written in Google Go.
 
 ## Installation
 
-First make sure you have the a working Go environment. See the [install instructions](http://golang.org/doc/install.html). gorrdpd will always compile on the `release` tag.
+First make sure you have the a working Go environment. See the [install instructions](http://golang.org/doc/install.html). MetricsD will always compile on the `release` tag.
 
-Then you will be able to clone and compile gorrdpd:
+Then you will be able to clone and compile MetricsD:
 
-    git clone --recursive --branch release git://github.com/kpumuk/gorrdpd.git
-    cd gorrdpd
+    git clone --recursive --branch release git://github.com/kpumuk/metricsd.git
+    cd metricsd
     make install
 
-By default gorrdpd will be install to the `/usr/local/gorrdpd` directory. To change it, use `DESTINATION` environment variable with `make install`:
+By default MetricsD will be install to the `/usr/local/metricsd` directory. To change it, use `DESTINATION` environment variable with `make install`:
 
-    DESTINATION=/opt/gorrdpd make install
+    DESTINATION=/opt/metricsd make install
 
 Please note: if you want to run `make install` with `sudo`, make sure that root user has all Go environment variables defined. Also you can use `-E` switch to preserve your current environment (needs `setenv` option set in `sudoers`):
 
@@ -22,7 +22,7 @@ Please note: if you want to run `make install` with `sudo`, make sure that root 
 
 ## Configuration
 
-Configuration is stored in JSON format, and you can find an example in `gorrdpd.conf.example`. Every config option could be overridden using command-line arguments. Following options available at the moment:
+Configuration is stored in JSON format, and you can find an example in `metricsd.conf.example`. Every config option could be overridden using command-line arguments. Following options available at the moment:
 
 * `Listen` (`-listen`) — set the port (+optional address) to listen at. Default is `"0.0.0.0:6311"`;
 * `DataDir` (`-data`) — set the data directory. Default is `"./data"`;
@@ -39,7 +39,7 @@ Another command-line options:
 
 ## Protocol details
 
-Gorrdpd uses very simple UDP-based protocol for collecting metrics. Here is what it looks like:
+MetricsD uses very simple UDP-based protocol for collecting metrics. Here is what it looks like:
 
 1. `metric:value` — in this simplest case value will be collected in several RRD files; for each writer (see below) two files will be created: `IP/metric-writer.rrd` and `all/metric-writer.rrd`, where `writer` is a name of writer, `IP` — an IP address of the source host, `metric` — metric name.
 2. `source@metric:value` — the same as previous, but instead of IP address of the source host, `source` will be used. If it's equal to `all`, no per-host RRD file will be created, only summary for all ones.
@@ -77,6 +77,6 @@ There are two writers currently implemented:
 
 ## Screenshots
 
-![GORRDPD: Index Page](http://kpumuk.github.com/gorrdpd/images/index.png)
+![MetricsD: Index Page](http://kpumuk.github.com/metricsd/images/index.png)
 
-![GORRDPD: Metric Details](http://kpumuk.github.com/gorrdpd/images/metric.png)
+![MetricsD: Metric Details](http://kpumuk.github.com/metricsd/images/metric.png)

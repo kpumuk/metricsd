@@ -6,13 +6,13 @@ import (
 	"os/signal"
 	"runtime"
 	"time"
-	"gorrdpd/config"
-	"gorrdpd/logger"
-	"gorrdpd/parser"
-	"gorrdpd/writers"
-	"gorrdpd/stdlib"
-	"gorrdpd/types"
-	"gorrdpd/web"
+	"metricsd/config"
+	"metricsd/logger"
+	"metricsd/parser"
+	"metricsd/writers"
+	"metricsd/stdlib"
+	"metricsd/types"
+	"metricsd/web"
 )
 
 var (
@@ -26,7 +26,7 @@ var (
 )
 
 func main() {
-	// Initialize gorrdpd
+	// Initialize MetricsD
 	initialize()
 
 	// Quit channel. Should be blocking (non-bufferred), so sender
@@ -143,10 +143,10 @@ func stats() {
 
 	for {
 		<-ticker.C
-		timeline.Add(types.NewEvent("all", "gorrdpd$events_count", int(eventsReceived)))
-		timeline.Add(types.NewEvent("all", "gorrdpd$traffic_in", int(bytesReceived)))
-		timeline.Add(types.NewEvent("all", "gorrdpd$memory_used", int(runtime.MemStats.Alloc/1024)))
-		timeline.Add(types.NewEvent("all", "gorrdpd$memory_system", int(runtime.MemStats.Sys/1024)))
+		timeline.Add(types.NewEvent("all", "metricsd$events_count", int(eventsReceived)))
+		timeline.Add(types.NewEvent("all", "metricsd$traffic_in", int(bytesReceived)))
+		timeline.Add(types.NewEvent("all", "metricsd$memory_used", int(runtime.MemStats.Alloc/1024)))
+		timeline.Add(types.NewEvent("all", "metricsd$memory_system", int(runtime.MemStats.Sys/1024)))
 
 		eventsReceived = 0
 		bytesReceived = 0

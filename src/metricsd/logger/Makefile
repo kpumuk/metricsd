@@ -1,7 +1,7 @@
 include ../../Make.inc
 
-TARG=gorrdpd/config
+TARG=metricsd/logger
 GOFILES=\
-	config.go\
+	logger.go\
 
 include $(GOROOT)/src/Make.pkg

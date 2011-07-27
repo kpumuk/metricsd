@@ -19,6 +19,14 @@ case "$1" in
     ;;
 
     start)
+        if [ -f "${SERVER_PID}" ]; then
+          if ps -o pid= -p $(cat ${SERVER_PID}) 2&>1 > /dev/null; then
+            echo "ERROR: server is already started"
+            exit 1
+          else
+            echo "WARNING: stale PID file found, removing"
+          fi
+        fi
         echo -n "Starting server: "
         exec nohup ${SERVER} ${SERVER_ARGS} >> ${SERVER_LOG} 2>&1 &
         echo $! > ${SERVER_PID}
@@ -34,11 +42,11 @@ case "$1" in
 
     stopkill)
         echo -n "Killing server: "
-        kill -9 $(cat ${SERVER_PID}) &> /dev/null
-        for i in `seq 1 2`;
+        kill $(cat ${SERVER_PID}) &> /dev/null
+        for i in {1..7};
         do
-          if [ "$(ps ax | grep $(cat ${SERVER_PID}) | grep -v grep)" == "" ]; then
-            sleep 5
+          if ps -o pid= -p $(cat ${SERVER_PID}) 2&>1 > /dev/null; then
+            sleep 10
           else
             killed=1
             break

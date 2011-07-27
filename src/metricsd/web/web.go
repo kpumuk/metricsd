@@ -19,6 +19,7 @@ func Start() {
     web.Get("/metric/(.*)/(.*)/(.*)", metric_graph)
     web.Get("/metric/(.*)/(.*)", host_metric)
     web.Get("/metric/(.*)", metric)
+    web.Get("/graph/(.*)/(.*)/(.*)\\.png", graph)
     web.Get("/graph/(.*)/(.*)/(.*)", graph)
     web.Get("/host/(.*)", host)
     web.Run(config.Listen)

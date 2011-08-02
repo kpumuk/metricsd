@@ -16,13 +16,18 @@ import (
 )
 
 var (
-	log					logger.Logger		/* Logger instance */
-	hostLookupCache		map[string]string	/* DNS names cache */
-	timeline			*types.Timeline		/* Timeline */
-	eventsReceived		int64				/* Events received */
-	totalEventsReceived	int64				/* Total Events received */
-	bytesReceived		int64				/* Bytes sent */
-	totalBytesReceived	int64				/* Total bytes sent */
+	log                 logger.Logger       /* Logger instance */
+	hostLookupCache     map[string]string   /* DNS names cache */
+	timeline            *types.Timeline     /* Timeline */
+	eventsReceived      int64               /* Events received */
+	totalEventsReceived int64               /* Total Events received */
+	bytesReceived       int64               /* Bytes sent */
+	totalBytesReceived  int64               /* Total bytes sent */
+	activeWriters       []writers.Writer    /* The list of active writers */
+)
+
+const (
+	runningProcesses = 3
 )
 
 func main() {
@@ -35,7 +40,7 @@ func main() {
 	quit := make(chan bool)
 
 	// Active writers
-	active_writers := []writers.Writer{
+	activeWriters = []writers.Writer{
 		&writers.Count{},
 		&writers.Quartiles{},
 		&writers.Percentiles{},
@@ -43,27 +48,12 @@ func main() {
 
 	// Start background Go routines
 	go listen(quit)
-	go stats()
-	go dumper(active_writers, quit)
+	go stats(quit)
+	go dumper(activeWriters, quit)
 	go web.Start()
 
 	// Handle signals
-	for sig := range signal.Incoming {
-		var usig = sig.(os.UnixSignal)
-		if usig == os.SIGHUP || usig == os.SIGINT || usig == os.SIGTERM {
-			log.Warn("Received signal: %s", sig)
-			if usig == os.SIGINT || usig == os.SIGTERM {
-				log.Warn("Shutting down everything...")
-				// We have two background processes, so wait for both
-				quit <- true
-				quit <- true
-			}
-			rollupSlices(active_writers, true)
-			if usig == os.SIGINT || usig == os.SIGTERM {
-				return
-			}
-		}
-	}
+	handleSignals(quit)
 }
 
 func initialize() {
@@ -100,9 +90,31 @@ func initialize() {
 	runtime.MemProfileRate = 0
 }
 
+func handleSignals(quit chan<- bool) {
+	for sig := range signal.Incoming {
+		var usig = sig.(os.UnixSignal)
+		if usig == os.SIGHUP || usig == os.SIGINT || usig == os.SIGTERM {
+			log.Warn("Received signal: %s", sig)
+			if usig == os.SIGINT || usig == os.SIGTERM {
+				log.Warn("Shutting down everything...")
+				// We have several background processes, so wait for all of them
+				for i := 1; i <= runningProcesses; i++ {
+					log.Debug("...waiting for process %d of %d...", i, runningProcesses)
+					quit <- true
+				}
+				log.Warn("...done!...")
+			}
+			rollupSlices(activeWriters, true)
+			if usig == os.SIGINT || usig == os.SIGTERM {
+				return
+			}
+		}
+	}
+}
+
 /***** Go routines ************************************************************/
 
-func listen(quit chan bool) {
+func listen(quit <-chan bool) {
 	log.Debug("Starting listener on %s", config.UDPAddress)
 
 	// Listen for requests
@@ -115,8 +127,8 @@ func listen(quit chan bool) {
 	defer listener.Close()
 
 	// Timeout is 0.1 second
-	listener.SetTimeout(100000000)
-	listener.SetReadTimeout(100000000)
+	listener.SetTimeout(1e8)
+	listener.SetReadTimeout(1e8)
 
 	data := make([]byte, 256)
 	for {
@@ -137,24 +149,29 @@ func listen(quit chan bool) {
 	}
 }
 
-func stats() {
-	ticker := time.NewTicker(1000000000)
+func stats(quit <-chan bool) {
+	ticker := time.NewTicker(1e9)
 	defer ticker.Stop()
 
 	for {
-		<-ticker.C
-		timeline.Add(types.NewEvent("all", "metricsd.events.count", int(eventsReceived)))
-		timeline.Add(types.NewEvent("all", "metricsd.traffic_in", int(bytesReceived)))
-		timeline.Add(types.NewEvent("all", "metricsd.memory.used", int(runtime.MemStats.Alloc/1024)))
-		timeline.Add(types.NewEvent("all", "metricsd.memory.system", int(runtime.MemStats.Sys/1024)))
+		select {
+		case <-quit:
+			log.Debug("Shutting down stats...")
+			return
+		case <-ticker.C:
+			timeline.Add(types.NewEvent("all", "metricsd.events.count", int(eventsReceived)))
+			timeline.Add(types.NewEvent("all", "metricsd.traffic_in", int(bytesReceived)))
+			timeline.Add(types.NewEvent("all", "metricsd.memory.used", int(runtime.MemStats.Alloc/1024)))
+			timeline.Add(types.NewEvent("all", "metricsd.memory.system", int(runtime.MemStats.Sys/1024)))
 
-		eventsReceived = 0
-		bytesReceived = 0
+			eventsReceived = 0
+			bytesReceived = 0
+		}
 	}
 }
 
-func dumper(active_writers []writers.Writer, quit chan bool) {
-	ticker := time.NewTicker(int64(config.WriteInterval) * 1000000000)
+func dumper(activeWriters []writers.Writer, quit <-chan bool) {
+	ticker := time.NewTicker(int64(config.WriteInterval) * 1e9)
 	defer ticker.Stop()
 
 	for {
@@ -163,7 +180,7 @@ func dumper(active_writers []writers.Writer, quit chan bool) {
 			log.Debug("Shutting down dumper...")
 			return
 		case <-ticker.C:
-			rollupSlices(active_writers, false)
+			rollupSlices(activeWriters, false)
 		}
 	}
 }
@@ -211,22 +228,24 @@ func lookupHost(addr *net.UDPAddr) (hostname string) {
 	return
 }
 
-func rollupSlices(active_writers []writers.Writer, force bool) {
+func rollupSlices(activeWriters []writers.Writer, force bool) {
 	log.Debug("Rolling up timeline")
+	startTime := time.Nanoseconds()
 
 	if config.BatchWrites {
 		closedSampleSets := timeline.ExtractClosedSampleSets(force)
-		for _, writer := range active_writers {
+		for _, writer := range activeWriters {
 			writers.BatchRollup(writer, closedSampleSets)
 		}
 	} else {
 		closedSlices := timeline.ExtractClosedSlices(force)
 		for _, slice := range closedSlices {
 			for _, set := range slice.Sets {
-				for _, writer := range active_writers {
+				for _, writer := range activeWriters {
 					writers.Rollup(writer, set)
 				}
 			}
 		}
 	}
+	log.Debug("... timeline rolled up, took %v seconds", float64(time.Nanoseconds() - startTime) / 1e9)
 }

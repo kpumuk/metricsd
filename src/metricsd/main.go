@@ -99,10 +99,10 @@ func handleSignals(quit chan<- bool) {
 				log.Warn("Shutting down everything...")
 				// We have several background processes, so wait for all of them
 				for i := 1; i <= runningProcesses; i++ {
-					log.Debug("...waiting for process %d of %d...", i, runningProcesses)
+					log.Debug("... waiting for process %d of %d", i, runningProcesses)
 					quit <- true
 				}
-				log.Warn("...done!...")
+				log.Warn("... done!")
 			}
 			rollupSlices(activeWriters, true)
 			if usig == os.SIGINT || usig == os.SIGTERM {
@@ -164,6 +164,8 @@ func stats(quit <-chan bool) {
 			timeline.Add(types.NewEvent("all", "metricsd.memory.used", int(runtime.MemStats.Alloc/1024)))
 			timeline.Add(types.NewEvent("all", "metricsd.memory.system", int(runtime.MemStats.Sys/1024)))
 
+			log.Debug("Processed %d events (%d bytes)", eventsReceived, bytesReceived)
+
 			eventsReceived = 0
 			bytesReceived = 0
 		}
@@ -188,7 +190,6 @@ func dumper(activeWriters []writers.Writer, quit <-chan bool) {
 /***** Helper functions *******************************************************/
 
 func process(addr *net.UDPAddr, buf string) {
-	log.Debug("Processing event from %s: %s", addr, buf)
 	bytesReceived += int64(len(buf))
 	totalBytesReceived += int64(len(buf))
 	parser.Parse(buf, func(event *types.Event, err os.Error) {

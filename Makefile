@@ -5,6 +5,7 @@ endif
 all: build
 
 build:
+	git submodule update
 	GOPATH=$(CURDIR) goinstall -clean metricsd
 	GOPATH=$(CURDIR) goinstall -clean benchmark
 

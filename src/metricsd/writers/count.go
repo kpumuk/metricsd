@@ -31,7 +31,7 @@ func (self *Count) Rollup(set *types.SampleSet) {
 
 // BatchRollup performs summarization on the given list of sample sets and
 // writes results to RRD files.
-func (self *Count) BatchRollup(sets types.SampleSetsList) {
+func (self *Count) BatchRollup(sets []*types.SampleSet) {
 	BatchRollup(self, sets)
 }
 

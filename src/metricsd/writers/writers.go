@@ -13,7 +13,7 @@ import (
 type Writer interface {
 	Name() string
 	Rollup(set *types.SampleSet)
-	BatchRollup(sets types.SampleSetsList)
+	BatchRollup(sets []*types.SampleSet)
 	// Private methods
 	rollupData(set *types.SampleSet) dataItem
 }
@@ -33,7 +33,7 @@ func Rollup(writer Writer, set *types.SampleSet) {
 	}
 }
 
-func BatchRollup(writer Writer, sets types.SampleSetsList) {
+func BatchRollup(writer Writer, sets []*types.SampleSet) {
 	data := make([]dataItem, 0, len(sets))
 	args := make([]string, 0, len(sets))
 
@@ -56,8 +56,8 @@ func BatchRollup(writer Writer, sets types.SampleSetsList) {
 		}
 
 		// Reached a new sequence or the end of samples list
-		if prevSource != set.Source || prevName != set.Name || cur == sets.Len()-1 {
 			batchRollup(writer, from, sets, data, &args)
+		if prevSource != set.Source || prevName != set.Name || cur == len(sets)-1 {
 
 			from = cur
 			prevSource = set.Source
@@ -71,15 +71,15 @@ func BatchRollup(writer Writer, sets types.SampleSetsList) {
 				data = append(data, item)
 
 				// The last item in the samples list
-				if cur == sets.Len()-1 {
 					batchRollup(writer, from, sets, data, &args)
+				if cur == len(sets)-1 {
 				}
 			}
 		}
 	}
 }
 
-func batchRollup(writer Writer, from int, sets types.SampleSetsList, data []dataItem, buf *[]string) {
+func batchRollup(writer Writer, from int, sets []*types.SampleSet, data []dataItem, buf *[]string) {
 	// Nothing to save
 	if len(data) == 0 {
 		return

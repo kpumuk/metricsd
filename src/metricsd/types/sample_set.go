@@ -8,7 +8,7 @@ type SampleSet struct {
     Time   int64
     Source string
     Name   string
-    Values IntValuesList
+    Values []int
 }
 
 func NewSampleSet(time int64, source, name string) *SampleSet {

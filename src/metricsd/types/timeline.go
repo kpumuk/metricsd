@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"sort"
 	"time"
 )
 
@@ -26,7 +25,7 @@ func (timeline *Timeline) Add(event *Event) {
 	timeline.getCurrentSlice().Add(event)
 }
 
-func (timeline *Timeline) ExtractClosedSlices(force bool) (closedSlices SlicesList) {
+func (timeline *Timeline) ExtractClosedSlices(force bool) (closedSlices []*Slice) {
 	var current int64
 	if force {
 		current = -1
@@ -41,18 +40,18 @@ func (timeline *Timeline) ExtractClosedSlices(force bool) (closedSlices SlicesLi
 	})
 
 	// Create an array to store timeline
-	closedSlices = make(SlicesList, 0, totalClosedSlices)
+	closedSlices = make([]*Slice, 0, totalClosedSlices)
 	timeline.eachClosedSlice(current, func(number int64, slice *Slice) {
 		closedSlices = append(closedSlices, slice)
 		timeline.Slices[number] = nil, false
 	})
-	sort.Sort(closedSlices)
+	SortSlices(closedSlices)
 	return
 }
 
 // ExtractClosedSampleSets finds closed timeline, and stores all sample sets from them
 // in an array. Processed timeline will be removed from the list of active timeline.
-func (timeline *Timeline) ExtractClosedSampleSets(force bool) (closedSampleSets SampleSetsList) {
+func (timeline *Timeline) ExtractClosedSampleSets(force bool) (closedSampleSets []*SampleSet) {
 	var current int64
 	if force {
 		current = -1
@@ -67,14 +66,14 @@ func (timeline *Timeline) ExtractClosedSampleSets(force bool) (closedSampleSets 
 	})
 
 	// Create an array to store sample sets
-	closedSampleSets = make(SampleSetsList, 0, totalSampleSets)
+	closedSampleSets = make([]*SampleSet, 0, totalSampleSets)
 	timeline.eachClosedSlice(current, func(number int64, slice *Slice) {
 		for _, set := range slice.Sets {
 			closedSampleSets = append(closedSampleSets, set)
 		}
 		timeline.Slices[number] = nil, false
 	})
-	sort.Sort(closedSampleSets)
+	SortSampleSets(closedSampleSets)
 	return
 }
 

@@ -41,7 +41,7 @@ func (self *Quartiles) Rollup(set *types.SampleSet) {
 
 // BatchRollup performs summarization on the given list of sample sets and
 // writes results to RRD files.
-func (self *Quartiles) BatchRollup(sets types.SampleSetsList) {
+func (self *Quartiles) BatchRollup(sets []*types.SampleSet) {
 	BatchRollup(self, sets)
 }
 
@@ -51,7 +51,7 @@ func (self *Quartiles) rollupData(set *types.SampleSet) (data dataItem) {
 	if len(set.Values) == 0 {
 		return
 	}
-	sort.Sort(set.Values)
+	sort.Ints(set.Values)
 	number := int64(len(set.Values))
 	lo := int64(set.Values[0])
 	hi := int64(set.Values[number - 1])

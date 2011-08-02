@@ -46,7 +46,7 @@ func (self *Percentiles) Rollup(set *types.SampleSet) {
 
 // BatchRollup performs summarization on the given list of sample sets and
 // writes results to RRD files.
-func (self *Percentiles) BatchRollup(sets types.SampleSetsList) {
+func (self *Percentiles) BatchRollup(sets []*types.SampleSet) {
 	BatchRollup(self, sets)
 }
 
@@ -56,7 +56,7 @@ func (self *Percentiles) rollupData(set *types.SampleSet) (data dataItem) {
 	if len(set.Values) == 0 {
 		return
 	}
-	sort.Sort(set.Values)
+	sort.Ints(set.Values)
 
 	pct90index, pct90 := pecentile(0.90, set)
 	pct95index, pct95 := pecentile(0.95, set)

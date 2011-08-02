@@ -34,7 +34,7 @@ func Parse(buf string, f func(event *types.Event, err os.Error)) int {
     // Number of successfully processed events
     var count int
     // Process multiple metrics in a single event
-    for _, msg := range strings.Split(buf, ";", -1) {
+    for _, msg := range strings.Split(buf, ";") {
         var source, name, svalue string
 
         // Check if the event contains a source name

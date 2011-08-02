@@ -9,7 +9,9 @@ import (
 
 // Quartiles writer is used to calculate quartiles, min and max values, and
 // total number of values in a sample set.
-type Quartiles struct{}
+type Quartiles struct{
+	*BaseWriter
+}
 
 type quartilesItem struct {
 	// Timestamp of the sample set.
@@ -31,18 +33,6 @@ type quartilesItem struct {
 // Name returns the name of the writer.
 func (self *Quartiles) Name() string {
 	return "quartiles"
-}
-
-// Rollup performs summarization on the given sample set and writes
-// results to RRD file.
-func (self *Quartiles) Rollup(set *types.SampleSet) {
-	Rollup(self, set)
-}
-
-// BatchRollup performs summarization on the given list of sample sets and
-// writes results to RRD files.
-func (self *Quartiles) BatchRollup(sets []*types.SampleSet) {
-	BatchRollup(self, sets)
 }
 
 // rollupData performs summarization on the given sample set and returns

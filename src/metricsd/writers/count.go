@@ -6,7 +6,9 @@ import (
 )
 
 // Count writer is used to calculate positive and negative numbers.
-type Count struct{}
+type Count struct{
+	*BaseWriter
+}
 
 // countItem stores summary information about sample set.
 type countItem struct {
@@ -21,18 +23,6 @@ type countItem struct {
 // Name returns the name of the writer.
 func (*Count) Name() string {
 	return "count"
-}
-
-// Rollup performs summarization on the given sample set and writes
-// results to RRD file.
-func (self *Count) Rollup(set *types.SampleSet) {
-	Rollup(self, set)
-}
-
-// BatchRollup performs summarization on the given list of sample sets and
-// writes results to RRD files.
-func (self *Count) BatchRollup(sets []*types.SampleSet) {
-	BatchRollup(self, sets)
 }
 
 // rollupData performs summarization on the given sample set and returns

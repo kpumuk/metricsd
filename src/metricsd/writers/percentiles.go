@@ -12,7 +12,9 @@ import (
 //
 // NIST recommended method is used to calculate percentiles:
 // http://www.itl.nist.gov/div898/handbook/prc/section2/prc252.htm
-type Percentiles struct{}
+type Percentiles struct{
+	*BaseWriter
+}
 
 // percentilesItem stores statistics information calculated by Percentiles
 // writer.
@@ -36,18 +38,6 @@ type percentilesItem struct {
 // Name returns the name of the writer.
 func (self *Percentiles) Name() string {
 	return "percentiles"
-}
-
-// Rollup performs summarization on the given sample set and writes
-// results to RRD file.
-func (self *Percentiles) Rollup(set *types.SampleSet) {
-	Rollup(self, set)
-}
-
-// BatchRollup performs summarization on the given list of sample sets and
-// writes results to RRD files.
-func (self *Percentiles) BatchRollup(sets []*types.SampleSet) {
-	BatchRollup(self, sets)
 }
 
 // rollupData performs summarization on the given sample set and returns

@@ -18,6 +18,7 @@ var (
 	debugLevel = flag.Int("debug", int(config.DEFAULT_SEVERITY), "Set the debug level, the lower - the more verbose (0-5)")
 	sliceInt = flag.Int("slice", config.DEFAULT_SLICE_INTERVAL, "Set the slice interval in seconds")
 	writeInt = flag.Int("write", config.DEFAULT_WRITE_INTERVAL, "Set the write interval in seconds")
+	rrdUpdateThreads = flag.Int("threads", config.DEFAULT_RRD_UPDATE_THREADS, "Set the number of RRD update threads")
 	batchWrites = flag.Bool("batch", config.DEFAULT_BATCH_WRITES, "Set the value indicating whether batch RRD updates should be used")
 	dnsLookup = flag.Bool("lookup", config.DEFAULT_LOOKUP_DNS, "Set the value indicating whether reverse DNS lookup should be performed for sources")
 	testAndExit = flag.Bool("test", false, "Validate config file and exit")
@@ -64,6 +65,9 @@ func parseCommandLineArguments() {
 	}
 	if *writeInt != config.DEFAULT_WRITE_INTERVAL {
 		config.WriteInterval = *writeInt
+	}
+	if *rrdUpdateThreads != config.DEFAULT_RRD_UPDATE_THREADS {
+		config.RrdUpdateThreads = *rrdUpdateThreads
 	}
 	if *batchWrites != config.DEFAULT_BATCH_WRITES {
 		config.BatchWrites = *batchWrites

@@ -1,9 +1,10 @@
 {
-    "Listen":        "0.0.0.0:6311",
-    "DataDir":       "./data",
-    "LogLevel":      1,
-    "SliceInterval": 10,
-    "WriteInterval": 60,
-    "BatchWrites":   false,
-    "LookupDns":     false
+    "Listen":           "0.0.0.0:6311",
+    "DataDir":          "./data",
+    "LogLevel":         1,
+    "SliceInterval":    10,
+    "WriteInterval":    60,
+    "RrdUpdateThreads": 1,
+    "BatchWrites":      false,
+    "LookupDns":        false
 }

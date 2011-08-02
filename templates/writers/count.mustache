@@ -16,7 +16,10 @@ graph
 --font=AXIS:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
 --font=LEGEND:8:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
 --font=UNIT:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
-DEF:a={{rrd_file}}:ok:AVERAGE
+{{#dark}}--color=CANVAS#000000
+--color=BACK#222222
+--color=FONT#EEEEEE
+{{/dark}}DEF:a={{rrd_file}}:ok:AVERAGE
 DEF:b={{rrd_file}}:fail:AVERAGE
 CDEF:cdefe=b,-1,*
 AREA:a#00CF00FF:Success

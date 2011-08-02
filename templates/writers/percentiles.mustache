@@ -16,7 +16,10 @@ graph
 --font=AXIS:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
 --font=LEGEND:8:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
 --font=UNIT:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
-DEF:a={{rrd_file}}:pct95mean:AVERAGE
+{{#dark}}--color=CANVAS#000000
+--color=BACK#222222
+--color=FONT#EEEEEE
+{{/dark}}DEF:a={{rrd_file}}:pct95mean:AVERAGE
 DEF:b={{rrd_file}}:pct95:AVERAGE
 DEF:c={{rrd_file}}:pct90mean:AVERAGE
 DEF:d={{rrd_file}}:pct90:AVERAGE

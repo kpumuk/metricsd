@@ -3,78 +3,78 @@ package parser
 import (
 	"os"
 	"testing"
-	"./types"
+	"metricsd/types"
 )
 
-type messageTest struct {
+type eventTest struct {
 	buf     string
 	results []testEntry
 }
 
 type testEntry struct {
-	message *types.Message
-	err     os.Error
+	event *types.Event
+	err   os.Error
 }
 
-var parseTests = []messageTest{
-	// Valid messages with single metric
+var parseTests = []eventTest{
+	// Valid events with single metric
 	{"metric:10", []testEntry{
-		{types.NewMessage("", "metric", 10), nil},
+		{types.NewEvent("", "metric", 10), nil},
 	}},
 	{"metric:-1", []testEntry{
-		{types.NewMessage("", "metric", -1), nil},
+		{types.NewEvent("", "metric", -1), nil},
 	}},
 	{"group$metric:-1", []testEntry{
-		{types.NewMessage("", "group$metric", -1), nil},
+		{types.NewEvent("", "group$metric", -1), nil},
 	}},
 	{"app01@metric:10", []testEntry{
-		{types.NewMessage("app01", "metric", 10), nil},
+		{types.NewEvent("app01", "metric", 10), nil},
 	}},
 
-	// Invalid messages with single metric
+	// Invalid events with single metric
 	{":10", []testEntry{
-		{nil, os.NewError("Metric name is empty (message=\":10\")")},
+		{nil, os.NewError("Metric name is empty (event=\":10\")")},
 	}},
 	{"metric!:10", []testEntry{
-		{nil, os.NewError("Metric name is invalid: \"metric!\" (message=\"metric!:10\")")},
+		{nil, os.NewError("Metric name is invalid: \"metric!\" (event=\"metric!:10\")")},
 	}},
 	{"src!@metric:10", []testEntry{
-		{nil, os.NewError("Source is invalid: \"src!\" (message=\"src!@metric:10\")")},
+		{nil, os.NewError("Source is invalid: \"src!\" (event=\"src!@metric:10\")")},
 	}},
 	{"app01@metric", []testEntry{
-		{nil, os.NewError("Message format is invalid (message=\"app01@metric\")")},
+		{nil, os.NewError("Event format is invalid (event=\"app01@metric\")")},
 	}},
 	{"app01@metric:hello", []testEntry{
-		{nil, os.NewError("Metric value \"hello\" is invalid (message=\"app01@metric:hello\")")},
+		{nil, os.NewError("Metric value \"hello\" is invalid (event=\"app01@metric:hello\")")},
 	}},
 
-	// Valid messages with multiple metrics
+	// Valid events with multiple metrics
 	{"metric1:10;metric2:20", []testEntry{
-		{types.NewMessage("", "metric1", 10), nil},
-		{types.NewMessage("", "metric2", 20), nil},
+		{types.NewEvent("", "metric1", 10), nil},
+		{types.NewEvent("", "metric2", 20), nil},
 	}},
 	{"app01@metric1:10;metric2:20", []testEntry{
-		{types.NewMessage("app01", "metric1", 10), nil},
-		{types.NewMessage("", "metric2", 20), nil},
+		{types.NewEvent("app01", "metric1", 10), nil},
+		{types.NewEvent("", "metric2", 20), nil},
 	}},
 	{"app01@metric1:10;app02@metric2:20", []testEntry{
-		{types.NewMessage("app01", "metric1", 10), nil},
-		{types.NewMessage("app02", "metric2", 20), nil},
+		{types.NewEvent("app01", "metric1", 10), nil},
+		{types.NewEvent("app02", "metric2", 20), nil},
 	}},
 
-	// Semi-valid messages (multiple metrics, some are invalid)
+	// Semi-valid events (multiple metrics, some are invalid)
 	{"metric1:10;metric2:", []testEntry{
-		{types.NewMessage("", "metric1", 10), nil},
-		{nil, os.NewError("Metric value \"\" is invalid (message=\"metric1:10;metric2:\")")},
+		{types.NewEvent("", "metric1", 10), nil},
+		{nil, os.NewError("Metric value \"\" is invalid (event=\"metric1:10;metric2:\")")},
 	}},
 }
 
 func TestParse(t *testing.T) {
 	for _, test := range parseTests {
 		var idx = 0
-		count := Parse(test.buf, func(message *types.Message, err os.Error) {
+		count := Parse(test.buf, func(event *types.Event, err os.Error) {
 			if idx == len(test.results) {
-				t.Errorf("Unexpected message #%d: message=%q, err=%q (buf=%q, idx=%d)", idx, message, err, test.buf, idx)
+				t.Errorf("Unexpected event #%d: event=%q, err=%q (buf=%q, idx=%d)", idx, event, err, test.buf, idx)
 			}
 
 			expected := test.results[idx]
@@ -89,23 +89,23 @@ func TestParse(t *testing.T) {
 				t.Errorf("Expected error %q, got error %q (buf=%q, idx=%d)", expected.err, err, test.buf, idx)
 			}
 			if err == nil {
-				if message == nil {
-					t.Errorf("Expected message %q, got nil (buf=%q, idx=%d)", expected.message, test.buf, idx)
+				if event == nil {
+					t.Errorf("Expected event %q, got nil (buf=%q, idx=%d)", expected.event, test.buf, idx)
 				}
-				if expected.message == nil {
-					t.Errorf("Expected nil, got message %q (buf=%q, idx=%d)", message, test.buf, idx)
+				if expected.event == nil {
+					t.Errorf("Expected nil, got event %q (buf=%q, idx=%d)", event, test.buf, idx)
 				}
 
-				if message != nil && expected.message != nil {
-					// Test Message fields
-					if message.Source != expected.message.Source {
-						t.Errorf("Expected message source %q, got %q (buf=%q, idx=%d)", expected.message.Source, message.Source, test.buf, idx)
+				if event != nil && expected.event != nil {
+					// Test Event fields
+					if event.Source != expected.event.Source {
+						t.Errorf("Expected event source %q, got %q (buf=%q, idx=%d)", expected.event.Source, event.Source, test.buf, idx)
 					}
-					if message.Name != expected.message.Name {
-						t.Errorf("Expected message name %q, got %q (buf=%q, idx=%d)", expected.message.Name, message.Name, test.buf, idx)
+					if event.Name != expected.event.Name {
+						t.Errorf("Expected event name %q, got %q (buf=%q, idx=%d)", expected.event.Name, event.Name, test.buf, idx)
 					}
-					if message.Value != expected.message.Value {
-						t.Errorf("Expected message value %q, got %q (buf=%q, idx=%d)", expected.message.Value, message.Name, test.buf, idx)
+					if event.Value != expected.event.Value {
+						t.Errorf("Expected event value %q, got %q (buf=%q, idx=%d)", expected.event.Value, event.Name, test.buf, idx)
 					}
 				}
 			}

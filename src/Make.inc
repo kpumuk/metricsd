@@ -2,5 +2,6 @@
 GOROOT ?= $(shell printf 't:;@echo $$(GOROOT)\n' | gomake -f -)
 include $(GOROOT)/src/Make.inc
 
-# format:
-# 	gofmt -spaces=true -tabindent=false -tabwidth=4 -s -w $(wildcard *.go)
+GCIMPORTS=-I "$(GOPATH)/pkg/$(GOOS)_$(GOARCH)"
+export LDIMPORTS=-L _test -L $(GOPATH)/pkg/$(GOOS)_$(GOARCH)/
+export GL=$(GOPATH)/src/gl.sh

@@ -5,7 +5,7 @@ endif
 all: build
 
 build:
-	git submodule update
+	# git submodule update
 	GOPATH=$(CURDIR) goinstall -clean metricsd
 	GOPATH=$(CURDIR) goinstall -clean benchmark
 
@@ -24,6 +24,13 @@ install: build rrdtool
 
 format:
 	find src/metricsd -type f -name '*.go' -exec gofmt -w {} ';'
+
+test: build
+	GOPATH=$(CURDIR) goinstall launchpad.net/gocheck
+	cd src/metricsd/parser && GOPATH=$(CURDIR) gomake clean test
+	cd src/metricsd/stdlib && GOPATH=$(CURDIR) gomake clean test
+	cd src/metricsd/types && GOPATH=$(CURDIR) gomake clean test
+	cd src/metricsd/writers && GOPATH=$(CURDIR) gomake clean test
 
 rrdtool:
 	if test ! -e /usr/bin/rrdtool; \

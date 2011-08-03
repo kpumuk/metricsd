@@ -5,12 +5,12 @@ import (
 )
 
 func TestGetRemoteHostNameLinuxOrg(t *testing.T) {
-	hostname, err := GetRemoteHostName("198.182.196.48")
+	hostname, err := GetRemoteHostName("207.97.227.239")
 	if err != nil {
 		t.Errorf("Error: %s", err)
 	}
-	if hostname != "linux.org" {
-		t.Errorf("Expected %s, got %s", "linux.org", hostname)
+	if hostname != "github.com" {
+		t.Errorf("Expected %s, got %s", "github.com", hostname)
 	}
 }
 

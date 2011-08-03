@@ -12,11 +12,11 @@ import (
 )
 
 type rrdUpdateTask struct {
-	writer Writer
-	set    *types.SampleSet
-	data   dataItem
-	f      func() []string
-	wg     *sync.WaitGroup
+	writer         Writer
+	firstSampleSet *types.SampleSet
+	firstDataItem  dataItem
+	f              func([]string) []string
+	wg             *sync.WaitGroup
 }
 
 var (
@@ -31,8 +31,8 @@ func Rollup(writer Writer, set *types.SampleSet) {
 	wg := &sync.WaitGroup{}
 
 	if data := writer.rollupData(set); data != nil {
-		updateRrd(writer, set, data, wg, func() []string {
-			return []string{data.rrdString()}
+		updateRrd(writer, set, data, wg, func(args []string) []string {
+			return append(args, data.rrdString())
 		})
 	}
 
@@ -40,8 +40,7 @@ func Rollup(writer Writer, set *types.SampleSet) {
 }
 
 func BatchRollup(writer Writer, sets []*types.SampleSet) {
-	data := make([]dataItem, 0, len(sets))
-	args := make([]string, 0, len(sets))
+	data := make([]dataItem, 0, 10)
 
 	var from int
 	var prevSource, prevName string
@@ -67,12 +66,12 @@ func BatchRollup(writer Writer, sets []*types.SampleSet) {
 
 		// Reached a new sequence or the end of samples list
 		if prevSource != set.Source || prevName != set.Name || cur == len(sets)-1 {
-			batchRollup(writer, from, sets, data, &args, wg)
+			batchRollup(writer, sets[from], data, wg)
 
 			from = cur
 			prevSource = set.Source
 			prevName = set.Name
-			data = data[0:0]
+			data = make([]dataItem, 0, 10)
 		}
 
 		// A new sequence beginning
@@ -82,7 +81,7 @@ func BatchRollup(writer Writer, sets []*types.SampleSet) {
 
 				// The last item in the samples list
 				if cur == len(sets)-1 {
-					batchRollup(writer, from, sets, data, &args, wg)
+					batchRollup(writer, sets[from], data, wg)
 				}
 			}
 		}
@@ -91,31 +90,20 @@ func BatchRollup(writer Writer, sets []*types.SampleSet) {
 	wg.Wait()
 }
 
-func batchRollup(writer Writer, from int, sets []*types.SampleSet, data []dataItem, buf *[]string, wg *sync.WaitGroup) {
-	// config.Logger.Debug("Starting batchRollup [time=%v, writer=%T, from=%d, name=%s, source=%s]", time.Nanoseconds(), writer, from, sets[from].Name, sets[from].Source)
+func batchRollup(writer Writer, firstSampleSet *types.SampleSet, data []dataItem, wg *sync.WaitGroup) {
 	// Nothing to save
 	if len(data) == 0 {
 		return
 	}
 
-	// Retrieve the first data item (used to get RRD-related information)
-	firstItem := data[0]
-	// Retrieve the first sample set (used to generate RRD file name)
-	firstSet := sets[from]
-
-	// Data collector function
-	f := func() (args []string) {
-		// Serialize all data items to buffer
-		args = (*buf)[:len(data)]
-		for i, elem := range data {
-			args[i] = elem.rrdString()
-		}
-		// config.Logger.Debug("... args=%s", args)
-		return
-	}
-
 	// Update RRD database
-	updateRrd(writer, firstSet, firstItem, wg, f)
+	updateRrd(writer, firstSampleSet, data[0], wg, func(args []string) []string {
+		// Serialize all data items to the arguments array
+		for _, elem := range data {
+			args = append(args, elem.rrdString())
+		}
+		return args
+	})
 }
 
 func prepareRrdUpdateThreads() {
@@ -127,10 +115,12 @@ func prepareRrdUpdateThreads() {
 	for i := 1; i <= config.RrdUpdateThreads; i++ {
 		go func(idx int) {
 			config.Logger.Debug("Started RRD update thread #%d", idx)
+			args := make([]string, 0, 10)
 			runtime.LockOSThread()
 			for {
 				task := <-rrdUpdateTasks
-				doUpdateRrd(task.writer, task.set, task.data, task.f)
+				args = task.f(args[:0])
+				doUpdateRrd(task.writer, task.firstSampleSet, task.firstDataItem, args)
 				task.wg.Done()
 			}
 		}(i)
@@ -138,22 +128,22 @@ func prepareRrdUpdateThreads() {
 	rrdUpdateThreadsPrepared = true
 }
 
-func updateRrd(writer Writer, set *types.SampleSet, data dataItem, wg *sync.WaitGroup, f func() []string) {
+func updateRrd(writer Writer, firstSampleSet *types.SampleSet, firstDataItem dataItem, wg *sync.WaitGroup, f func([]string) []string) {
 	wg.Add(1)
-	rrdUpdateTasks <- &rrdUpdateTask{writer: writer, set: set, data: data, f: f, wg: wg}
+	rrdUpdateTasks <- &rrdUpdateTask{writer: writer, firstSampleSet: firstSampleSet, firstDataItem: firstDataItem, f: f, wg: wg}
 }
 
-func doUpdateRrd(writer Writer, set *types.SampleSet, data dataItem, f func() []string) {
-	file := getRrdFile(writer, set)
+func doUpdateRrd(writer Writer, firstSampleSet *types.SampleSet, firstDataItem dataItem, args []string) {
+	file := getRrdFile(writer, firstSampleSet)
 	if _, err := os.Stat(file); err != nil {
-		err := rrd.Create(file, int64(config.SliceInterval), set.Time-int64(config.SliceInterval), data.rrdInfo())
+		err := rrd.Create(file, int64(config.SliceInterval), firstSampleSet.Time-int64(config.SliceInterval), firstDataItem.rrdInfo())
 		if err != nil {
 			config.Logger.Debug("Error occurred: %s", err)
 			return
 		}
 	}
 	// config.Logger.Debug("... file=%s", file)
-	err := rrd.Update(file, data.rrdTemplate(), f())
+	err := rrd.Update(file, firstDataItem.rrdTemplate(), args)
 	if err != nil {
 		config.Logger.Debug("Error occurred: %s", err)
 	}

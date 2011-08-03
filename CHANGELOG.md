@@ -1,4 +1,4 @@
-## 0.6.0 (Development)
+## 0.6.0 (August 3, 2011)
 
 Project has been renamed to MetricsD (was Gorrdpd)
 
@@ -17,7 +17,7 @@ Bugfixes:
   - Image URLs include .png in the end (nicer playing with Campfire)
   - Fixed bug with standard deviation for 95th percentile graphing
 
-## 0.5.6 (Jul 26, 2011)
+## 0.5.6 (July 26, 2011)
 
 Features:
 
@@ -40,31 +40,31 @@ Bugfixes:
   - Detect data directory relatively to the executable file full path
   - Updates for Go release r57.1
 
-## 0.5.4 (Oct 27, 2010)
+## 0.5.4 (October 27, 2010)
 
 Bugfixes:
 
   - Fixed root directory detection
 
-## 0.5.3 (Oct 27, 2010)
+## 0.5.3 (October 27, 2010)
 
 Bugfixes:
 
   - Better root directory detection
 
-## 0.5.2 (Oct 27, 2010)
+## 0.5.2 (October 27, 2010)
 
 Bugfixes:
 
   - Updates for Go release 2010-10-20
 
-## 0.5.1 (Oct 26, 2010)
+## 0.5.1 (October 26, 2010)
 
 Bugfixes:
 
   - Fixed wrong gorrd library repository URL in Makefile
 
-## 0.5.0 (Oct 17, 2010)
+## 0.5.0 (October 17, 2010)
 
 Features:
 
@@ -78,13 +78,13 @@ Bugfixes:
   - RRD sequence start time was invalid
   - Removed "slicer" thread as useless
 
-## 0.4.1 (Sep 14, 2010)
+## 0.4.1 (September 14, 2010)
 
 Bugfixes:
 
   - Fixed "make install" so it fill delete old executable file backups
 
-## 0.4.0 (Sep 14, 2010)
+## 0.4.0 (September 14, 2010)
 
 Features:
 
@@ -92,7 +92,7 @@ Features:
   - Added groups support to protocol and Web UI (group$metric:value)
   - Parallel metrics reporting in benchmarking tool + some other configuration parameters
 
-## 0.3.0 (Sep 6, 2010)
+## 0.3.0 (September 6, 2010)
 
 Features:
 
@@ -103,19 +103,19 @@ Bugfixes:
 
   - Fixed error in "listen" parameter parsing
 
-## 0.2.2 (Aug 28, 2010)
+## 0.2.2 (August 28, 2010)
 
 Bugfixes:
 
   - Makefile refactoring
 
-## 0.2.1 (Aug 20, 2010)
+## 0.2.1 (August 20, 2010)
 
 Bugfixes:
 
   - Fixed bug in quartiles calculation
 
-## 0.2.0 (Aug 19, 2010)
+## 0.2.0 (August 19, 2010)
 
 Features:
 
@@ -125,7 +125,7 @@ Features:
   - Switched from rrdtool to gorrd library (librrd wrapper)
   - Added gorrdpd.sh to start/stop gorrdpd daemon
 
-## 0.1.0 (Aug 4, 2010)
+## 0.1.0 (August 4, 2010)
 
 Features:
 

@@ -16,14 +16,14 @@ import (
 )
 
 var (
-	log                 logger.Logger       /* Logger instance */
-	hostLookupCache     map[string]string   /* DNS names cache */
-	timeline            *types.Timeline     /* Timeline */
-	eventsReceived      int64               /* Events received */
-	totalEventsReceived int64               /* Total Events received */
-	bytesReceived       int64               /* Bytes sent */
-	totalBytesReceived  int64               /* Total bytes sent */
-	activeWriters       []writers.Writer    /* The list of active writers */
+	log                 logger.Logger     /* Logger instance */
+	hostLookupCache     map[string]string /* DNS names cache */
+	timeline            *types.Timeline   /* Timeline */
+	eventsReceived      int64             /* Events received */
+	totalEventsReceived int64             /* Total Events received */
+	bytesReceived       int64             /* Bytes sent */
+	totalBytesReceived  int64             /* Total bytes sent */
+	activeWriters       []writers.Writer  /* The list of active writers */
 )
 
 const (
@@ -248,5 +248,5 @@ func rollupSlices(activeWriters []writers.Writer, force bool) {
 			}
 		}
 	}
-	log.Debug("... timeline rolled up, took %v seconds", float64(time.Nanoseconds() - startTime) / 1e9)
+	log.Debug("... timeline rolled up, took %v seconds", float64(time.Nanoseconds()-startTime)/1e9)
 }

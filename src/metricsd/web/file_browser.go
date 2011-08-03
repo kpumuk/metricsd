@@ -9,10 +9,10 @@ import (
 )
 
 type graphItem struct {
-	Name	string
-	Writer	string
-	Group	string
-	Title	string
+	Name   string
+	Writer string
+	Group  string
+	Title  string
 }
 
 func (graph *graphItem) Less(graphToCompare interface{}) bool {
@@ -40,9 +40,9 @@ func (l graphItemsList) Less(i, j int) bool {
 
 
 type graphItemGroup struct {
-	Group		string
-	HasGroup	bool
-	Graphs		graphItemsList
+	Group    string
+	HasGroup bool
+	Graphs   graphItemsList
 }
 
 func (group *graphItemGroup) Less(groupToCompare *graphItemGroup) bool {
@@ -50,8 +50,8 @@ func (group *graphItemGroup) Less(groupToCompare *graphItemGroup) bool {
 }
 
 type graphItemSource struct {
-	Source	string
-	Graphs	graphItemsList
+	Source string
+	Graphs graphItemsList
 }
 
 func (source *graphItemSource) Less(sourceToCompare interface{}) bool {

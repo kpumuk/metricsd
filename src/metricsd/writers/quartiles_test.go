@@ -7,10 +7,11 @@ import (
 type QuartilesS struct {
 	quartiles *Quartiles
 }
+
 var _ = Suite(&QuartilesS{})
 
 func (s *QuartilesS) SetUpTest(c *C) {
-    s.quartiles = &Quartiles{}
+	s.quartiles = &Quartiles{}
 }
 
 func (s *QuartilesS) TestRollupDataWithEmptySampleSet(c *C) {

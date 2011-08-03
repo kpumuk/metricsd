@@ -65,9 +65,9 @@ func graph(ctx *web.Context, source, metric, writer string) {
 	ctx.SetHeader("Content-Type", "image/png", true)
 
 	params := struct {
-		Rra				string
-		Width, Height	int
-		Dark			bool
+		Rra           string
+		Width, Height int
+		Dark          bool
 	}{"daily", 620, 240, false}
 	ctx.Request.UnmarshalParams(&params)
 
@@ -90,16 +90,16 @@ func graph(ctx *web.Context, source, metric, writer string) {
 
 	rrd_file := fmt.Sprintf("%s/%s/%s-%s.rrd", config.DataDir, source, metric, writer)
 	args := mustache.RenderFile(template("writers/"+writer), map[string]interface{}{
-		"source":	source,
-		"metric":	metric,
-		"writer":	writer,
-		"rrd_file":	rrd_file,
-		"from":		from,
-		"width":	params.Width,
-		"height":	params.Height,
-		"rra":		params.Rra,
-		"interval":	config.SliceInterval,
-		"dark":		params.Dark,
+		"source":   source,
+		"metric":   metric,
+		"writer":   writer,
+		"rrd_file": rrd_file,
+		"from":     from,
+		"width":    params.Width,
+		"height":   params.Height,
+		"rra":      params.Rra,
+		"interval": config.SliceInterval,
+		"dark":     params.Dark,
 	})
 	r, w, err := os.Pipe()
 	if err != nil {

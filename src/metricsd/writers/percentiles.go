@@ -12,7 +12,7 @@ import (
 //
 // NIST recommended method is used to calculate percentiles:
 // http://www.itl.nist.gov/div898/handbook/prc/section2/prc252.htm
-type Percentiles struct{
+type Percentiles struct {
 	*BaseWriter
 }
 
@@ -66,19 +66,19 @@ func (self *Percentiles) rollupData(set *types.SampleSet) (data dataItem) {
 	var pct95sqdiff float64 = 0
 	for idx, elem := range set.Values[0:pct95index] {
 		if int64(idx) <= pct90index {
-			pct90sqdiff += math.Pow(float64(pct90mean) - float64(elem), 2)
+			pct90sqdiff += math.Pow(float64(pct90mean)-float64(elem), 2)
 		}
-		pct95sqdiff += math.Pow(float64(pct95mean) - float64(elem), 2)
+		pct95sqdiff += math.Pow(float64(pct95mean)-float64(elem), 2)
 	}
 
 	data = &percentilesItem{
-		time:		set.Time,
-		pct90:		int64(pct90 + 0.5),
-		pct90mean:	int64(pct90mean + 0.5),
-		pct90dev:	int64(math.Sqrt(pct90sqdiff / float64(pct90index)) + 0.5),
-		pct95:		int64(pct95 + 0.5),
-		pct95mean:	int64(pct95mean + 0.5),
-		pct95dev:	int64(math.Sqrt(pct95sqdiff / float64(pct95index)) + 0.5),
+		time:      set.Time,
+		pct90:     int64(pct90 + 0.5),
+		pct90mean: int64(pct90mean + 0.5),
+		pct90dev:  int64(math.Sqrt(pct90sqdiff/float64(pct90index)) + 0.5),
+		pct95:     int64(pct95 + 0.5),
+		pct95mean: int64(pct95mean + 0.5),
+		pct95dev:  int64(math.Sqrt(pct95sqdiff/float64(pct95index)) + 0.5),
 	}
 	return
 }
@@ -106,12 +106,12 @@ func (*percentilesItem) rrdInfo() []string {
 		"DS:pct95:GAUGE:600:0:U",
 		"DS:pct95mean:GAUGE:600:0:U",
 		"DS:pct95dev:GAUGE:600:0:U",
-		"RRA:AVERAGE:0.5:1:25920",		// 72 hours at 1 sample per 10 secs
-		"RRA:AVERAGE:0.5:60:4320",		// 1 month at 1 sample per 10 mins
-		"RRA:AVERAGE:0.5:2880:5475",	// 5 years at 1 sample per 8 hours
-		"RRA:MAX:0.5:1:25920",			// 72 hours at 1 sample per 10 secs
-		"RRA:MAX:0.5:60:4320",			// 1 month at 1 sample per 10 mins
-		"RRA:MAX:0.5:2880:5475",		// 5 years at 1 sample per 8 hours
+		"RRA:AVERAGE:0.5:1:25920",   // 72 hours at 1 sample per 10 secs
+		"RRA:AVERAGE:0.5:60:4320",   // 1 month at 1 sample per 10 mins
+		"RRA:AVERAGE:0.5:2880:5475", // 5 years at 1 sample per 8 hours
+		"RRA:MAX:0.5:1:25920",       // 72 hours at 1 sample per 10 secs
+		"RRA:MAX:0.5:60:4320",       // 1 month at 1 sample per 10 mins
+		"RRA:MAX:0.5:2880:5475",     // 5 years at 1 sample per 8 hours
 	}
 }
 
@@ -142,9 +142,9 @@ func pecentile(p float64, set *types.SampleSet) (index int64, pct float64) {
 	var n float64 = p * (float64(number) + 1)
 	k, d := math.Modf(n)
 	index = int64(k)
-	pct = float64(set.Values[index - 1])
+	pct = float64(set.Values[index-1])
 	if index > 1 && index < number {
-		pct += d * float64(set.Values[index] - set.Values[index - 1])
+		pct += d * float64(set.Values[index]-set.Values[index-1])
 	}
 
 	return

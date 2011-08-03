@@ -6,7 +6,7 @@ import (
 )
 
 // Count writer is used to calculate positive and negative numbers.
-type Count struct{
+type Count struct {
 	*BaseWriter
 }
 
@@ -50,9 +50,9 @@ func (*countItem) rrdInfo() []string {
 	return []string{
 		"DS:ok:ABSOLUTE:600:0:U",
 		"DS:fail:ABSOLUTE:600:0:U",
-		"RRA:AVERAGE:0.5:1:25920",		// 72 hours at 1 sample per 10 secs
-		"RRA:AVERAGE:0.5:60:4320",		// 1 month at 1 sample per 10 mins
-		"RRA:AVERAGE:0.5:2880:5475",	// 5 years at 1 sample per 8 hours
+		"RRA:AVERAGE:0.5:1:25920",   // 72 hours at 1 sample per 10 secs
+		"RRA:AVERAGE:0.5:60:4320",   // 1 month at 1 sample per 10 mins
+		"RRA:AVERAGE:0.5:2880:5475", // 5 years at 1 sample per 8 hours
 	}
 }
 

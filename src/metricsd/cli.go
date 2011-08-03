@@ -11,17 +11,17 @@ import (
 )
 
 var (
-	configPath = flag.String("config", config.DEFAULT_CONFIG_PATH, "Set the path to config file")
-	listenAddr = flag.String("listen", config.DEFAULT_LISTEN, "Set the port (+optional address) to listen at")
-	dataPath = flag.String("data", config.DEFAULT_DATA_DIR, "Set the data directory")
-	rootPath = flag.String("root", config.DEFAULT_ROOT_DIR, "Set the root directory")
-	debugLevel = flag.Int("debug", int(config.DEFAULT_SEVERITY), "Set the debug level, the lower - the more verbose (0-5)")
-	sliceInt = flag.Int("slice", config.DEFAULT_SLICE_INTERVAL, "Set the slice interval in seconds")
-	writeInt = flag.Int("write", config.DEFAULT_WRITE_INTERVAL, "Set the write interval in seconds")
+	configPath       = flag.String("config", config.DEFAULT_CONFIG_PATH, "Set the path to config file")
+	listenAddr       = flag.String("listen", config.DEFAULT_LISTEN, "Set the port (+optional address) to listen at")
+	dataPath         = flag.String("data", config.DEFAULT_DATA_DIR, "Set the data directory")
+	rootPath         = flag.String("root", config.DEFAULT_ROOT_DIR, "Set the root directory")
+	debugLevel       = flag.Int("debug", int(config.DEFAULT_SEVERITY), "Set the debug level, the lower - the more verbose (0-5)")
+	sliceInt         = flag.Int("slice", config.DEFAULT_SLICE_INTERVAL, "Set the slice interval in seconds")
+	writeInt         = flag.Int("write", config.DEFAULT_WRITE_INTERVAL, "Set the write interval in seconds")
 	rrdUpdateThreads = flag.Int("threads", config.DEFAULT_RRD_UPDATE_THREADS, "Set the number of RRD update threads")
-	batchWrites = flag.Bool("batch", config.DEFAULT_BATCH_WRITES, "Set the value indicating whether batch RRD updates should be used")
-	dnsLookup = flag.Bool("lookup", config.DEFAULT_LOOKUP_DNS, "Set the value indicating whether reverse DNS lookup should be performed for sources")
-	testAndExit = flag.Bool("test", false, "Validate config file and exit")
+	batchWrites      = flag.Bool("batch", config.DEFAULT_BATCH_WRITES, "Set the value indicating whether batch RRD updates should be used")
+	dnsLookup        = flag.Bool("lookup", config.DEFAULT_LOOKUP_DNS, "Set the value indicating whether reverse DNS lookup should be performed for sources")
+	testAndExit      = flag.Bool("test", false, "Validate config file and exit")
 )
 
 func parseCommandLineArguments() {

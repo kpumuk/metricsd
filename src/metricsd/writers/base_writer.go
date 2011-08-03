@@ -12,7 +12,7 @@ type Writer interface {
 	rollupData(set *types.SampleSet) dataItem
 }
 
-type BaseWriter struct {}
+type BaseWriter struct{}
 
 // Rollup performs summarization on the given sample set and writes
 // results to RRD file.

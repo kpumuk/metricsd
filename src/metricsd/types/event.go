@@ -10,7 +10,7 @@ type MetricValue int
 type Event struct {
 	Source string // event source (IP address, DNS name, or custom string)
 	Name   string // metric's name
-	Value  int	// metric's value
+	Value  int    // metric's value
 }
 
 // NewEvent returns a new Event with the given source, name, and value.

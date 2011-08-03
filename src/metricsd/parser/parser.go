@@ -8,11 +8,11 @@
 package parser
 
 import (
-    "fmt"
-    "os"
-    "strconv"
-    "strings"
-    "metricsd/types"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+	"metricsd/types"
 )
 
 // Parse parses source buffer and invokes the given function, passing either parsed
@@ -31,73 +31,73 @@ import (
 //
 // Return value for this example will be 2.
 func Parse(buf string, f func(event *types.Event, err os.Error)) int {
-    // Number of successfully processed events
-    var count int
-    // Process multiple metrics in a single event
-    for _, msg := range strings.Split(buf, ";") {
-        var source, name, svalue string
+	// Number of successfully processed events
+	var count int
+	// Process multiple metrics in a single event
+	for _, msg := range strings.Split(buf, ";") {
+		var source, name, svalue string
 
-        // Check if the event contains a source name
-        if idx := strings.Index(msg, "@"); idx >= 0 {
-            source = msg[:idx]
-            msg = msg[idx+1:]
+		// Check if the event contains a source name
+		if idx := strings.Index(msg, "@"); idx >= 0 {
+			source = msg[:idx]
+			msg = msg[idx+1:]
 
-            if !validateMetric(source) {
-                f(nil, os.NewError(fmt.Sprintf("Source is invalid: %q (event=%q)", source, buf)))
-                continue
-            }
-        }
+			if !validateMetric(source) {
+				f(nil, os.NewError(fmt.Sprintf("Source is invalid: %q (event=%q)", source, buf)))
+				continue
+			}
+		}
 
-        // Retrieve the metric name
-        if idx := strings.Index(msg, ":"); idx >= 0 {
-            name = msg[:idx]
-            svalue = msg[idx+1:]
+		// Retrieve the metric name
+		if idx := strings.Index(msg, ":"); idx >= 0 {
+			name = msg[:idx]
+			svalue = msg[idx+1:]
 
-            if !validateMetric(name) {
-                f(nil, os.NewError(fmt.Sprintf("Metric name is invalid: %q (event=%q)", name, buf)))
-                continue
-            }
-            if len(name) == 0 {
-                f(nil, os.NewError(fmt.Sprintf("Metric name is empty (event=%q)", buf)))
-                continue
-            }
-        } else {
-            f(nil, os.NewError(fmt.Sprintf("Event format is invalid (event=%q)", buf)))
-            continue
-        }
+			if !validateMetric(name) {
+				f(nil, os.NewError(fmt.Sprintf("Metric name is invalid: %q (event=%q)", name, buf)))
+				continue
+			}
+			if len(name) == 0 {
+				f(nil, os.NewError(fmt.Sprintf("Metric name is empty (event=%q)", buf)))
+				continue
+			}
+		} else {
+			f(nil, os.NewError(fmt.Sprintf("Event format is invalid (event=%q)", buf)))
+			continue
+		}
 
-        // Parse the value
-        if value, error := strconv.Atoi(svalue); error != nil {
-            f(nil, os.NewError(fmt.Sprintf("Metric value %q is invalid (event=%q)", svalue, buf)))
-            continue
-        } else {
-            f(types.NewEvent(source, name, value), nil)
-            count += 1
-        }
-    }
-    return count
+		// Parse the value
+		if value, error := strconv.Atoi(svalue); error != nil {
+			f(nil, os.NewError(fmt.Sprintf("Metric value %q is invalid (event=%q)", svalue, buf)))
+			continue
+		} else {
+			f(types.NewEvent(source, name, value), nil)
+			count += 1
+		}
+	}
+	return count
 }
 
 /***** Helper functions *******************************************************/
 
 func validateMetric(name string) bool {
-    for _, rune := range name {
-        if rune < 0x80 {
-            // Digits
-            if '0' <= rune && rune <= '9' {
-                continue
-            }
-            // Letters
-            if 'a' <= rune && rune <= 'z' {
-                continue
-            }
-            switch rune {
-            // Special characters
-            case '_', '-', '$', '.':
-                continue
-            }
-        }
-        return false
-    }
-    return true
+	for _, rune := range name {
+		if rune < 0x80 {
+			// Digits
+			if '0' <= rune && rune <= '9' {
+				continue
+			}
+			// Letters
+			if 'a' <= rune && rune <= 'z' {
+				continue
+			}
+			switch rune {
+			// Special characters
+			case '_', '-', '$', '.':
+				continue
+			}
+		}
+		return false
+	}
+	return true
 }

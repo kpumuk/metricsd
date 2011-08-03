@@ -13,10 +13,10 @@ import (
 
 type rrdUpdateTask struct {
 	writer Writer
-	set *types.SampleSet
-	data dataItem
-	f func() []string
-	wg *sync.WaitGroup
+	set    *types.SampleSet
+	data   dataItem
+	f      func() []string
+	wg     *sync.WaitGroup
 }
 
 var (

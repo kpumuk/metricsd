@@ -22,6 +22,9 @@ install: build rrdtool
 	then cp metricsd.conf.sample $(DESTINATION)/metricsd.conf; \
 	fi
 
+format:
+	find src/metricsd -type f -name '*.go' -exec gofmt -w {} ';'
+
 rrdtool:
 	if test ! -e /usr/bin/rrdtool; \
 	then echo "Please install rrdtool to /usr/bin/rrdtool"; exit; \

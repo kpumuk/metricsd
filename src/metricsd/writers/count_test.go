@@ -7,10 +7,11 @@ import (
 type CountS struct {
 	count *Count
 }
+
 var _ = Suite(&CountS{})
 
 func (s *CountS) SetUpTest(c *C) {
-    s.count = &Count{}
+	s.count = &Count{}
 }
 
 func (s *CountS) TestRollupDataWithEmptySampleSet(c *C) {

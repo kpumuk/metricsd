@@ -23,7 +23,7 @@ install: build rrdtool
 	fi
 
 format:
-	find src/metricsd -type f -name '*.go' -exec gofmt -w {} ';'
+	find src/metricsd src/benchmark -type f -name '*.go' -exec gofmt -w {} ';'
 
 test: build
 	GOPATH=$(CURDIR) goinstall launchpad.net/gocheck

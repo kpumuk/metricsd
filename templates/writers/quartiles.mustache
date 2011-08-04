@@ -12,10 +12,10 @@ graph
 --lower-limit=0
 --vertical-label=analyzed per {{interval}} seconds
 --slope-mode
---font=TITLE:9:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
---font=AXIS:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
---font=LEGEND:8:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
---font=UNIT:7:/usr/share/fonts/liberation/LiberationMono-Regular.ttf
+--font=TITLE:9:Liberation Sans Bold
+--font=AXIS:7:Liberation Sans
+--font=LEGEND:7.5:Monaco
+--font=UNIT:9:Liberation Sans
 {{#dark}}--color=CANVAS#000000
 --color=BACK#222222
 --color=FONT#EEEEEE
@@ -37,7 +37,8 @@ LINE1:c#96E78AFF:Q1 (25%)
 GPRINT:c:LAST:Current\:%8.2lf %s
 GPRINT:c:AVERAGE:Average\:%8.2lf %s
 GPRINT:c:MAX:Maximum\:%8.2lf %s\n
-GPRINT:d:MIN:Lowest\:%8.2lf %s
+COMMENT:\t 
+GPRINT:d:MIN:Lowest\: %8.2lf %s
 GPRINT:e:AVERAGE:Highest\:%8.2lf %s
-GPRINT:f:AVERAGE:Total\:%8.2lf %s\n
+GPRINT:f:AVERAGE:Total\:  %8.2lf %s\n
 LINE1:b#157419FF:

@@ -10,7 +10,10 @@ type Slice struct {
 }
 
 func NewSlice(time int64) *Slice {
-	return &Slice{Time: time, Sets: make(map[string]*SampleSet)}
+	return &Slice{
+		Time: time,
+		Sets: make(map[string]*SampleSet),
+	}
 }
 
 func (slice *Slice) Less(sliceToCompare *Slice) bool {

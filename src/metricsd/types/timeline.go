@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -10,6 +11,7 @@ import (
 type Timeline struct {
 	Interval int64
 	Slices   map[int64]*Slice
+	mutex    *sync.Mutex
 }
 
 // NewTimeline returns a new timeline Timeline with the given slice interval.
@@ -17,6 +19,7 @@ func NewTimeline(sliceInterval int) *Timeline {
 	return &Timeline{
 		Slices:   make(map[int64]*Slice),
 		Interval: int64(sliceInterval),
+		mutex:    &sync.Mutex{},
 	}
 }
 
@@ -43,7 +46,9 @@ func (timeline *Timeline) ExtractClosedSlices(force bool) (closedSlices []*Slice
 	closedSlices = make([]*Slice, 0, totalClosedSlices)
 	timeline.eachClosedSlice(current, func(number int64, slice *Slice) {
 		closedSlices = append(closedSlices, slice)
+		timeline.mutex.Lock()
 		timeline.Slices[number] = nil, false
+		timeline.mutex.Unlock()
 	})
 	SortSlices(closedSlices)
 	return
@@ -71,41 +76,45 @@ func (timeline *Timeline) ExtractClosedSampleSets(force bool) (closedSampleSets 
 		for _, set := range slice.Sets {
 			closedSampleSets = append(closedSampleSets, set)
 		}
+		timeline.mutex.Lock()
 		timeline.Slices[number] = nil, false
+		timeline.mutex.Unlock()
 	})
 	SortSampleSets(closedSampleSets)
 	return
 }
 
-func (slices *Timeline) String() string {
+func (timeline *Timeline) String() string {
 	return fmt.Sprintf(
 		"Timeline[interval=%d, size=%d]",
-		slices.Interval,
-		len(slices.Slices),
+		timeline.Interval,
+		len(timeline.Slices),
 	)
 }
 
 // getCurrentSlice creates (if necessary) and returns the current slice
 // (see getCurrentSliceNumber for details).
-func (slices *Timeline) getCurrentSlice() *Slice {
-	number := slices.getCurrentSliceNumber()
-	if _, found := slices.Slices[number]; !found {
-		slices.Slices[number] = NewSlice(number * slices.Interval)
+func (timeline *Timeline) getCurrentSlice() *Slice {
+	number := timeline.getCurrentSliceNumber()
+	if _, found := timeline.Slices[number]; !found {
+		timeline.mutex.Lock()
+		timeline.Slices[number] = NewSlice(number * timeline.Interval)
+		timeline.mutex.Unlock()
 	}
-	return slices.Slices[number]
+	return timeline.Slices[number]
 }
 
 // getCurrentSliceNumber returns current slice number (time since epoc in
 // seconds, rounded to the slices interval).
-func (slices *Timeline) getCurrentSliceNumber() int64 {
-	return time.Seconds() / slices.Interval
+func (timeline *Timeline) getCurrentSliceNumber() int64 {
+	return time.Seconds() / timeline.Interval
 }
 
 // eachClosedSlice calls function f for each slice with the slice number less
 // then current, in no particular order. If current is negative, it calls
 // function f for all slices.
-func (slices *Timeline) eachClosedSlice(current int64, f func(number int64, slice *Slice)) {
-	for number, slice := range slices.Slices {
+func (timeline *Timeline) eachClosedSlice(current int64, f func(number int64, slice *Slice)) {
+	for number, slice := range timeline.Slices {
 		if number < current || current < 0 {
 			f(number, slice)
 		}

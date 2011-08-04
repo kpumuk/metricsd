@@ -1,30 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"rand"
-	"runtime"
-	"strings"
+	"runtime/pprof"
+	"os"
 	"time"
 )
 
-func send(address *net.UDPAddr, source, key string, value int) {
-	conn, error := net.DialUDP("udp4", nil, address)
-	if error != nil {
-		log.Fatalf("Failed to connect to %s", address)
-	}
-	defer conn.Close()
-
-	data := fmt.Sprintf("%s@%s:%d", source, key, value)
-	io.Copy(conn, strings.NewReader(data))
-}
-
 func main() {
-	var address, source, key string
+	var address, source, key, cpuprofile string
 	var count, step, threads int
 	var delay int64
 	var sourcecnt, keycnt int
@@ -37,6 +26,7 @@ func main() {
 	flag.Int64Var(&delay, "delay", 1000000, "Set the delay between packets in nanoseconds (10^-9)")
 	flag.IntVar(&step, "step", 100, "Log step (how many packets to send between logging)")
 	flag.IntVar(&threads, "threads", 10, "Set the number of active threads")
+	flag.StringVar(&cpuprofile, "cpuprofile", "", "Write CPU profile to the file")
 	flag.Parse()
 
 	udp_address, error := net.ResolveUDPAddr("udp", address)
@@ -44,7 +34,15 @@ func main() {
 		log.Fatalf("Cannot parse \"%s\": %s", address, error)
 	}
 
-	runtime.GOMAXPROCS(threads + 1)
+	if cpuprofile != "" {
+		f, err := os.Create(cpuprofile)
+		if err != nil {
+			log.Fatalf("Error while creating file \"%s\" for CPU profile: %s", cpuprofile, err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
 	rand.Seed(time.Nanoseconds())
 
 	tasks := make(chan int, threads)
@@ -53,19 +51,36 @@ func main() {
 			ticker := time.NewTicker(delay)
 			defer ticker.Stop()
 
+			conn, error := net.DialUDP("udp4", nil, udp_address)
+			if error != nil {
+				log.Fatalf("Failed to connect to %s", address)
+			}
+
+			buf := bytes.NewBuffer(make([]byte, 0, 20))
+
 			log.Printf("Started thread #%d", idx)
 			for {
 				<-ticker.C
 				task := <-tasks
-				send(udp_address, fmt.Sprintf(source, rand.Intn(sourcecnt)), fmt.Sprintf(key, rand.Intn(keycnt)), task%step)
+
+				fmt.Fprintf(buf, source, rand.Intn(sourcecnt))
+				buf.WriteRune('@')
+				fmt.Fprintf(buf, key, rand.Intn(keycnt))
+				fmt.Fprintf(buf, ":%d", task%step)
+				buf.WriteTo(conn)
+				buf.Reset()
 			}
 		}(i)
 	}
 
+	timeStart := time.Nanoseconds()
+	sentStart := 1
 	for sent := 1; sent <= count; sent++ {
 		tasks <- sent
 		if sent%step == 0 {
-			log.Printf("Processed %d packets of %d", sent, count)
+			log.Printf("Processed %d packets of %d, QPS=%v", sent, count, float64(sent-sentStart)/float64(time.Nanoseconds()-timeStart)*1e9)
+			timeStart = time.Nanoseconds()
+			sentStart = sent
 		}
 	}
 	time.Sleep(delay * 2)

@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"sync/atomic"
 	"time"
 	"metricsd/config"
 	"metricsd/logger"
@@ -190,16 +191,16 @@ func dumper(activeWriters []writers.Writer, quit <-chan bool) {
 /***** Helper functions *******************************************************/
 
 func process(addr *net.UDPAddr, buf string) {
-	bytesReceived += int64(len(buf))
-	totalBytesReceived += int64(len(buf))
+	atomic.AddInt64(&bytesReceived, int64(len(buf)))
+	atomic.AddInt64(&totalBytesReceived, int64(len(buf)))
 	parser.Parse(buf, func(event *types.Event, err os.Error) {
 		if err == nil {
 			if event.Source == "" {
 				event.Source = lookupHost(addr)
 			}
 			timeline.Add(event)
-			eventsReceived++
-			totalEventsReceived++
+			atomic.AddInt64(&eventsReceived, 1)
+			atomic.AddInt64(&totalEventsReceived, 1)
 		} else {
 			log.Debug("Error while parsing an event: %s", err)
 		}

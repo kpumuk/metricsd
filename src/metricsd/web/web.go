@@ -68,24 +68,43 @@ func graph(ctx *web.Context, source, metric, writer string) {
 		Rra           string
 		Width, Height int
 		Dark          bool
-	}{"daily", 620, 240, false}
+		Start, End    int
+	}{"daily", 620, 240, false, 0, 0}
 	ctx.Request.UnmarshalParams(&params)
 
-	var from int
+	if params.Start != 0 || params.End != 0 {
+		params.Rra = "custom"
+	}
+
+	var start, end int
 	switch params.Rra {
 	case "hourly":
-		from = -14400
+		start = -14400
+		end = -300
 	case "daily":
-		from = -86400
+		start = -86400
+		end = -300
 	case "weekly":
-		from = -604800
+		start = -604800
+		end = -1800
 	case "monthly":
-		from = -2678400
+		start = -2678400
+		end = -7200
 	case "yearly":
-		from = -33053184
+		start = -33053184
+		end = -86400
 	default:
-		from = -86400
-		params.Rra = "daily"
+		start = -86400
+		end = -300
+		params.Rra = "custom"
+	}
+
+	if params.Start == 0 {
+		params.Start = start
+	}
+
+	if params.End == 0 {
+		params.End = end
 	}
 
 	rrd_file := fmt.Sprintf("%s/%s/%s-%s.rrd", config.DataDir, source, metric, writer)
@@ -94,7 +113,8 @@ func graph(ctx *web.Context, source, metric, writer string) {
 		"metric":   metric,
 		"writer":   writer,
 		"rrd_file": rrd_file,
-		"from":     from,
+		"start":    params.Start,
+		"end":      params.End,
 		"width":    params.Width,
 		"height":   params.Height,
 		"rra":      params.Rra,

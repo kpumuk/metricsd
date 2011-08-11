@@ -27,6 +27,9 @@ var parseTests = []eventTest{
 	{"group$metric:-1", []testEntry{
 		{types.NewEvent("", "group$metric", -1), nil},
 	}},
+	{"group.metric:2", []testEntry{
+		{types.NewEvent("", "group.metric", 2), nil},
+	}},
 	{"app01@metric:10", []testEntry{
 		{types.NewEvent("app01", "metric", 10), nil},
 	}},
@@ -75,6 +78,7 @@ func TestParse(t *testing.T) {
 		count := Parse(test.buf, func(event *types.Event, err os.Error) {
 			if idx == len(test.results) {
 				t.Errorf("Unexpected event #%d: event=%q, err=%q (buf=%q, idx=%d)", idx, event, err, test.buf, idx)
+				return
 			}
 
 			expected := test.results[idx]
@@ -122,4 +126,21 @@ func TestParse(t *testing.T) {
 			t.Errorf("Expected to return %q, got %q (buf=%q)", len(test.results), count, test.buf)
 		}
 	}
+}
+
+func BenchmarkParse(b *testing.B) {
+	b.StopTimer()
+	buf := "app01@group.metric:10;app02@group.metric:2;group.metric:2"
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		Parse(buf, func(event *types.Event, err os.Error) {
+			if err != nil {
+				panic("Error occurred: " + err.String())
+			}
+		})
+		b.SetBytes(int64(len(buf)))
+	}
+
+	b.StopTimer()
 }

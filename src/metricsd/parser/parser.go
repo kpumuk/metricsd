@@ -34,13 +34,19 @@ func Parse(buf string, f func(event *types.Event, err os.Error)) int {
 	// Number of successfully processed events
 	var count int
 	// Process multiple metrics in a single event
-	for _, msg := range strings.Split(buf, ";") {
+	var msg string
+	for str := buf; str != ""; {
+		if idx := strings.Index(str, ";"); idx >= 0 {
+			msg, str = str[:idx], str[idx+1:]
+		} else {
+			msg, str = str, str[:0]
+		}
+
 		var source, name, svalue string
 
 		// Check if the event contains a source name
 		if idx := strings.Index(msg, "@"); idx >= 0 {
-			source = msg[:idx]
-			msg = msg[idx+1:]
+			source, msg = msg[:idx], msg[idx+1:]
 
 			if !validateMetric(source) {
 				f(nil, os.NewError(fmt.Sprintf("Source is invalid: %q (event=%q)", source, buf)))
@@ -50,8 +56,7 @@ func Parse(buf string, f func(event *types.Event, err os.Error)) int {
 
 		// Retrieve the metric name
 		if idx := strings.Index(msg, ":"); idx >= 0 {
-			name = msg[:idx]
-			svalue = msg[idx+1:]
+			name, svalue = msg[:idx], msg[idx+1:]
 
 			if !validateMetric(name) {
 				f(nil, os.NewError(fmt.Sprintf("Metric name is invalid: %q (event=%q)", name, buf)))
@@ -82,22 +87,21 @@ func Parse(buf string, f func(event *types.Event, err os.Error)) int {
 
 func validateMetric(name string) bool {
 	for _, rune := range name {
-		if rune < 0x80 {
-			// Digits
-			if '0' <= rune && rune <= '9' {
-				continue
-			}
-			// Letters
-			if 'a' <= rune && rune <= 'z' {
-				continue
-			}
-			switch rune {
-			// Special characters
-			case '_', '-', '$', '.':
-				continue
-			}
+		if rune > 0x7F {
+			return false
 		}
-		return false
+
+		// Digits and Letters
+		if ('0' <= rune && rune <= '9') || ('a' <= rune && rune <= 'z') || ('A' <= rune && rune <= 'Z') {
+			continue
+		}
+		// Special characters
+		switch rune {
+		case '_', '-', '$', '.':
+			continue
+		default:
+			return false
+		}
 	}
 	return true
 }

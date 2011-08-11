@@ -32,6 +32,13 @@ test: build
 	cd src/metricsd/types && GOPATH=$(CURDIR) gomake clean test
 	cd src/metricsd/writers && GOPATH=$(CURDIR) gomake clean test
 
+bench: build
+	GOPATH=$(CURDIR) goinstall launchpad.net/gocheck
+	cd src/metricsd/parser && GOPATH=$(CURDIR) gomake clean bench
+	cd src/metricsd/stdlib && GOPATH=$(CURDIR) gomake clean bench
+	cd src/metricsd/types && GOPATH=$(CURDIR) gomake clean bench
+	cd src/metricsd/writers && GOPATH=$(CURDIR) gomake clean bench
+
 rrdtool:
 	if test ! -e /usr/bin/rrdtool; \
 	then echo "Please install rrdtool to /usr/bin/rrdtool"; exit; \

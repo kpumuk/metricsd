@@ -1,6 +1,13 @@
 ifeq ($(DESTINATION),)
 DESTINATION:=/usr/local/metricsd
 endif
+REVISION=$(shell git ls-remote . HEAD|cut -d'	' -f1)
+SHORTREV=$(shell echo $(REVISION)|cut -c1-7)
+BUILDDIR=kpumuk-metricsd-$(SHORTREV)
+VERSION=$(shell git ls-remote -t .|grep $(REVISION)|cut -d'/' -f3)
+ifeq ($(VERSION),)
+VERSION=$(SHORTREV)
+endif
 
 all: build
 
@@ -46,3 +53,11 @@ rrdtool:
 
 clean:
 	make -C src clean
+
+tarball:
+	rm -rf build/$(BUILDDIR) && mkdir -p build/$(BUILDDIR) && cd build/$(BUILDDIR) && \
+	git clone ../.. . && git submodule init && git submodule update && \
+	find . -name .git -type d | xargs rm -rf && \
+	cd .. && tar czf metricsd-$(VERSION).tar.gz $(BUILDDIR) && \
+	rm -rf $(BUILDDIR)
+	cd ..

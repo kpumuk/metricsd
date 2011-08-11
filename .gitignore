@@ -10,6 +10,7 @@ _testmain.go
 bin/metricsd
 bin/benchmark
 data
+build
 metricsd.conf
 pkg
 src/benchmark/benchmark

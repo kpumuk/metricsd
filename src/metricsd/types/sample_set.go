@@ -20,8 +20,8 @@ func NewSampleSet(time int64, source, name string) *SampleSet {
 	}
 }
 
-func (set *SampleSet) Add(event *Event) {
-	set.Values = append(set.Values, event.Value)
+func (set *SampleSet) Add(value int) {
+	set.Values = append(set.Values, value)
 }
 
 func (set *SampleSet) Less(setToCompare *SampleSet) bool {

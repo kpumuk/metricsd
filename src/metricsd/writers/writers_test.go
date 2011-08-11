@@ -17,6 +17,6 @@ func createSampleSet(time int64, values ...int) (ss *types.SampleSet) {
 
 func fillSampleSet(ss *types.SampleSet, values ...int) {
 	for _, value := range values {
-		ss.Add(&types.Event{Value: value})
+		ss.Add(value)
 	}
 }

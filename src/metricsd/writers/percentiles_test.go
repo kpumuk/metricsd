@@ -2,7 +2,6 @@ package writers
 
 import (
 	. "launchpad.net/gocheck"
-	"metricsd/types"
 )
 
 type PercentilesS struct {
@@ -48,7 +47,7 @@ func (s *PercentilesS) TestRollupDataWithSimpleSampleSet(c *C) {
 func (s *PercentilesS) TestRollupDataWithComplexSampleSet(c *C) {
 	ss := createSampleSet(6000)
 	for i := 1; i < 100; i++ {
-		ss.Add(&types.Event{Value: i * 10})
+		ss.Add(i * 10)
 	}
 	data := s.percentiles.rollupData(ss)
 	c.Check(data, Equals, &percentilesItem{time: 6000, pct90: 900, pct90mean: 455, pct90dev: 264, pct95: 950, pct95mean: 480, pct95dev: 274})

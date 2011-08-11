@@ -17,12 +17,12 @@ func (s *SliceS) SetUpTest(c *C) {
 }
 
 func (s *SliceS) TestGetAllSampleSetKey(c *C) {
-	key := s.slice.getAllSampleSetKey("metric")
+	key := s.slice.getSampleSetKey("all", "metric")
 	c.Check(key, Equals, "all-metric")
 }
 
 func (s *SliceS) TestGetMachineSampleSetKey(c *C) {
-	key := s.slice.getMachineSampleSetKey("src", "metric")
+	key := s.slice.getSampleSetKey("src", "metric")
 	c.Check(key, Equals, "src-metric")
 }
 
@@ -39,25 +39,13 @@ func BenchmarkSliceAdd(b *testing.B) {
 	b.StopTimer()
 }
 
-func BenchmarkSliceGetAllSampleSetKey(b *testing.B) {
+func BenchmarkSliceGetSampleSetKey(b *testing.B) {
 	b.StopTimer()
 	ss := NewSlice(10)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		ss.getAllSampleSetKey("metric")
-	}
-
-	b.StopTimer()
-}
-
-func BenchmarkSliceGetMachineSampleSetKey(b *testing.B) {
-	b.StopTimer()
-	ss := NewSlice(10)
-	b.StartTimer()
-
-	for i := 0; i < b.N; i++ {
-		ss.getMachineSampleSetKey("src", "metric")
+		ss.getSampleSetKey("src", "metric")
 	}
 
 	b.StopTimer()

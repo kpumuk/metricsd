@@ -1,3 +1,19 @@
+## 0.6.1 (August 11, 2011)
+
+Features:
+
+  - Added ability to specify time range for graphs using URL parameters "start" and "end"
+  - Migration from $ to . groups finished. Now migrating from _count to .status, and from _time to .time
+
+Bugfixes:
+
+  - Fixed Web UI layout in Firefox
+  - Improved performance of benchmark utility
+  - Internal MetricsD stats use atomic increments
+  - Added synchronization to Timeline
+  - Performance improvements in storage and parser
+  - Added some benchmarks
+
 ## 0.6.0 (August 3, 2011)
 
 Project has been renamed to MetricsD (was Gorrdpd)

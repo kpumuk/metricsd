@@ -153,7 +153,14 @@ func getRrdFile(writer Writer, set *types.SampleSet) string {
 	dir := fmt.Sprintf("%s/%s", config.DataDir, set.Source)
 	os.MkdirAll(dir, 0755)
 	// This is temporary solution while we migrate from $ grouping to .
-	file := fmt.Sprintf("%s-%s", strings.Replace(set.Name, "$", ".", -1), writer.Name())
+	metricName := strings.Replace(set.Name, "$", ".", -1)
+	if strings.HasSuffix(metricName, "_time") {
+		metricName = metricName[0:len(metricName)-len("_time")] + ".time"
+	}
+	if strings.HasSuffix(metricName, "_count") {
+		metricName = metricName[0:len(metricName)-len("_count")] + ".status"
+	}
+	file := fmt.Sprintf("%s-%s", metricName, writer.Name())
 	path := fmt.Sprintf("%s/%s.rrd", dir, file)
 	migrateDollarGroupsToDots(dir, file, path)
 	return path
@@ -161,40 +168,19 @@ func getRrdFile(writer Writer, set *types.SampleSet) string {
 
 func migrateDollarGroupsToDots(dir, file, path string) {
 	if _, err := os.Stat(path); err != nil {
-		oldFile := strings.Replace(file, ".", "$", 1)
-		oldPath := fmt.Sprintf("%s/%s.rrd", dir, oldFile)
-		// config.Logger.Info("Probing %s", oldPath)
-		if _, err := os.Stat(oldPath); err == nil {
-			config.Logger.Info("Old file exists, renaming %s to %s", oldPath, path)
-			os.Rename(oldPath, path)
-			return
-		}
-
-		oldFile = strings.Replace(oldFile, ".", "_", -1)
-		oldPath = fmt.Sprintf("%s/%s.rrd", dir, oldFile)
-		// config.Logger.Info("Probing %s", oldPath)
-		if _, err := os.Stat(oldPath); err == nil {
-			config.Logger.Info("Old file exists, renaming %s to %s", oldPath, path)
-			os.Rename(oldPath, path)
-			return
-		}
-
-		oldFile = strings.Replace(oldFile, "$", ".", -1)
-		oldPath = fmt.Sprintf("%s/%s.rrd", dir, oldFile)
-		// config.Logger.Info("Probing %s", oldPath)
-		if _, err := os.Stat(oldPath); err == nil {
-			config.Logger.Info("Old file exists, renaming %s to %s", oldPath, path)
-			os.Rename(oldPath, path)
-			return
-		}
-
-		oldFile = strings.Replace(oldFile, ".", "_", -1)
-		oldPath = fmt.Sprintf("%s/%s.rrd", dir, oldFile)
-		// config.Logger.Info("Probing %s", oldPath)
-		if _, err := os.Stat(oldPath); err == nil {
-			config.Logger.Info("Old file exists, renaming %s to %s", oldPath, path)
-			os.Rename(oldPath, path)
+		if migrateProbeFile(dir, strings.Replace(strings.Replace(file, ".time", "_time", 1), ".status", "_count", 1), path) {
 			return
 		}
 	}
+}
+
+func migrateProbeFile(dir, oldFile, path string) bool {
+	oldPath := fmt.Sprintf("%s/%s.rrd", dir, oldFile)
+	config.Logger.Info("Probing %s", oldPath)
+	if _, err := os.Stat(oldPath); err == nil {
+		config.Logger.Info("Old file exists, renaming %s to %s", oldPath, path)
+		os.Rename(oldPath, path)
+		return true
+	}
+	return false
 }

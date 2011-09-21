@@ -38,7 +38,6 @@ func (l graphItemsList) Less(i, j int) bool {
 	return l[i].Less(l[j])
 }
 
-
 type graphItemGroup struct {
 	Group    string
 	HasGroup bool
@@ -75,7 +74,6 @@ func (l graphItemGroupsList) Len() int {
 func (l graphItemGroupsList) Less(i, j int) bool {
 	return l[i].Less(l[j])
 }
-
 
 type Browser struct{}
 

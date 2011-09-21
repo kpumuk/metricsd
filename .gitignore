@@ -15,3 +15,5 @@ metricsd.conf
 pkg
 src/benchmark/benchmark
 src/metricsd/metricsd
+goinstall.log
+.idea

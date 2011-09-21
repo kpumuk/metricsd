@@ -11,7 +11,6 @@ type SliceS struct {
 
 var _ = Suite(&SliceS{})
 
-
 func (s *SliceS) SetUpTest(c *C) {
 	s.slice = NewSlice(10)
 }

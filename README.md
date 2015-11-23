@@ -69,7 +69,7 @@ Examples:
 
 Writer is an implementation of a metrics aggregation algorithm. Each writer generates an RRD file with different (most probably) datasources and RRAs to store aggregated metrics.
 
-There are two writers currently implemented:
+There are three writers currently implemented:
 
 1. `count` — calculates number of successful (value > `0`) and failes (value < `0`) events. Data sources: `ok` — number of successful events, `fail` — number of failed events.
 2. `quartiles` — calculates [quartiles](http://en.wikipedia.org/wiki/Quartile) for input data. Creates following data sources: `q1` (first quartile), `q2` (second quartile), `q3` (third quartile), `hi` (max sample), `lo` (min sample), `total` (number of samples).
